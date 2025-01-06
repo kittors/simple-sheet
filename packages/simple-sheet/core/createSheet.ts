@@ -41,6 +41,15 @@ class CreateSheet {
             immediate: true,
             once: false
         });
+
+        // 监听滚动条的变化
+        store.watch('scrollBarConfig', (newValue) => {
+           console.log(newValue.vertical.top);
+        }, {
+            immediate: false,
+            deep: true,
+            once: false
+        });
     }
 
     private async createSheetContainer () {

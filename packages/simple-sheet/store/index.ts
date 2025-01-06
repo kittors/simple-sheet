@@ -1,21 +1,18 @@
 type Listener = () => void;
 import type { State } from './type';
+import { Watcher } from '../common/watcher';
 
 type WatchCallback<T> = (newValue: T, oldValue: T) => void;
 
 interface WatchOptions {
     immediate?: boolean;
     once?: boolean;
-}
-
-interface Watch<T> {
-    callbacks: Set<WatchCallback<T>>;
-    options: WatchOptions;
+    deep?: boolean;
 }
 
 class Store {
     private static instance: Store;
-    private watches: Map<keyof State, Watch<any>> = new Map();
+    private watcher: Watcher;
     
     public state: State = {
         isLoading: false,
@@ -33,21 +30,27 @@ class Store {
             height: 0,
         },
         scrollBarConfig: {
-            color: '#000',
+            color: 'rgb(222, 224, 227)',
+            activeColor: 'rgb(180, 182, 185)',
             backgroundColor: '#fff',
-            borderRadius: 0,
-            size: 10,
+            borderRadius: 5,
+            size: 16,
+            gap: 8,
+            borderColor: '#E8E9E9',
+            borderWidth: 1,
+            scrollSpeed: 0.1,
+            minSize: 20,
             horizontal: {
                 show: false,
                 width: 0,
-                minWidth: 40,
                 scrollBgWidth: 0,
+                left: 0,
             },
             vertical: {
                 show: false,
                 height: 0,
-                minHeight: 40,
                 scrollBgHeight: 0,
+                top: 0,
             },
         },
         sheetConfig: {
@@ -63,7 +66,9 @@ class Store {
 
     private listeners: Listener[] = [];
 
-    private constructor() {}
+    private constructor() {
+        this.watcher = new Watcher(this);
+    }
 
     public static getInstance(): Store {
         if (!Store.instance) {
@@ -87,36 +92,9 @@ class Store {
     public watch<K extends keyof State>(
         key: K,
         callback: WatchCallback<State[K]>,
-        options: WatchOptions = { immediate: false, once: true }
+        options: WatchOptions = { immediate: false, once: true, deep: false }
     ): () => void {
-        const existingWatch = this.watches.get(key);
-        
-        if (existingWatch) {
-            existingWatch.callbacks.add(callback);
-            if (options.immediate) {
-                callback(this.state[key], this.state[key]);
-            }
-            return () => {
-                existingWatch.callbacks.delete(callback);
-            };
-        }
-
-        const watch: Watch<State[K]> = {
-            callbacks: new Set([callback]),
-            options
-        };
-        this.watches.set(key, watch);
-
-        if (options.immediate) {
-            callback(this.state[key], this.state[key]);
-        }
-
-        return () => {
-            watch.callbacks.delete(callback);
-            if (watch.callbacks.size === 0) {
-                this.watches.delete(key);
-            }
-        };
+        return this.watcher.watch(key, callback, options);
     }
 
     public async setState<K extends keyof typeof this.state>(
@@ -126,20 +104,7 @@ class Store {
         const oldValue = this.state[key];
         this.state[key] = value;
         
-        const watch = this.watches.get(key);
-        if (watch) {
-            // 使用 Promise.all 等待所有回调执行完成
-            await Promise.all(
-                Array.from(watch.callbacks).map(callback =>
-                    Promise.resolve(callback(value, oldValue))
-                )
-            );
-            
-            if (watch.options.once) {
-                this.watches.delete(key);
-            }
-        }
-
+        await this.watcher.notify(key, value, oldValue);
         this.notify();
     }
 
@@ -148,11 +113,7 @@ class Store {
     }
 
     public clearWatch(key?: keyof State) {
-        if (key) {
-            this.watches.delete(key);
-        } else {
-            this.watches.clear();
-        }
+        this.watcher.clearWatch(key);
     }
 }
 

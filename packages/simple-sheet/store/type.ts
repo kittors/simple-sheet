@@ -32,16 +32,28 @@ interface State {
         borderRadius: number;
         /** 滚动条尺寸  水平滚动条的高度 垂直滚动条的宽度 */
         size: number;
+        /** 间隔 */
+        gap: number;
+        /** 滚动条边框颜色 */
+        borderColor: string;
+        /** 滚动条边框宽度 */
+        borderWidth: number;
+        /** 滚动速度 */
+        scrollSpeed: number;
+        /** 滚动条最小尺寸 */
+        minSize: number;
+        /** 滑块激活颜色 */
+        activeColor: string;
         /** 水平滚动条配置 */
         horizontal: {
             /** 是否显示 */
             show: boolean;
             /** 滚动条宽度 */
             width: number;
-            /** 最小滚动条宽度 */
-            minWidth: number;
             /** 滚动条背景宽度 */
             scrollBgWidth: number;
+            /** 滚动条左边距 */
+            left: number;
         };
         /** 垂直滚动条配置 */
         vertical: {
@@ -49,10 +61,10 @@ interface State {
             show: boolean;
             /** 滚动条高度 */
             height: number;
-            /** 最小滚动条高度 */
-            minHeight: number;
             /** 滚动条背景宽度 */
             scrollBgHeight: number;
+            /** 滚动条上边距 */
+            top: number;
         };
     };
     /** 清理 resize 事件 */
