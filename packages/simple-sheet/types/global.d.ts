@@ -66,7 +66,7 @@ declare interface DrawCellDataItem {
     borderColor: string,
     /** 是否是表头 */
     isHeader?: boolean;
-    /** 是否是固定单元格 */
+    /** 是否是固定 */
     isFixed?: boolean;
     /** 背景颜色 */
     backgroundColor?: string;
