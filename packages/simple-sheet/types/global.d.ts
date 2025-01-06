@@ -35,13 +35,23 @@ declare interface NewSheetConfig extends SheetConfig {
   
 
 declare interface DrawCellDataItem {
+    /** 单元格x坐标 */
     x: number,
+    /** 单元格y坐标 */
     y: number,
+    /** 单元格宽度 */
     width: number,
+    /** 单元格高度 */
     height: number,
+    /** 边框大小 */
     borderSize: number,
+    /** 边框颜色 */
     borderColor: string,
+    /** 是否是表头 */
     isHeader?: boolean;
+    /** 是否是固定单元格 */
+    isFixed?: boolean;
+    /** 背景颜色 */
     backgroundColor?: string;
 }
 

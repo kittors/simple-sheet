@@ -58,22 +58,29 @@ class Draw {
     private async drawCells() {
         if (!this.ctx) return;
 
-         await generateData();
-         const cells = store.getState('drawCellData');
+        await generateData();
+        const cells = store.getState('drawCellData');
         
         // 遍历所有单元格
         cells.forEach((cell, key) => {
             const [row, col] = key.split(',').map(Number);
             
-            this.ctx!.beginPath();
-            this.ctx!.strokeStyle = cell.borderColor;
-            const borderWidth = Math.max(0.3, Math.round(cell.borderSize));
-            this.ctx!.lineWidth = borderWidth;
-            
             const x = Math.floor(cell.x);
             const y = Math.floor(cell.y);
             const width = Math.floor(cell.width);
             const height = Math.floor(cell.height);
+
+            // 添加背景颜色绘制
+            if (cell.backgroundColor) {
+                this.ctx!.fillStyle = cell.backgroundColor;
+                this.ctx!.fillRect(x, y, width, height);
+            }
+            
+            // 原有的边框绘制代码
+            this.ctx!.beginPath();
+            this.ctx!.strokeStyle = cell.borderColor;
+            const borderWidth = Math.max(0.3, Math.round(cell.borderSize));
+            this.ctx!.lineWidth = borderWidth;
             
             // 分别绘制四条边，避免重复绘制
             // 上边框 - 只在第一行或者上一行的单元格不存在时绘制
