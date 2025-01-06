@@ -5,6 +5,24 @@ class GenerateData {
 
     private constructor () {}
 
+    private get scrollBarConfig() {
+        return store.getState('scrollBarConfig');
+    }
+
+    private get containerSize() {
+        return store.getState('containerSize');
+    }
+
+    // 获取水平滚动条向左的距离
+    private get horizontalScrollBarLeft() {
+        return store.getState('scrollBarConfig').horizontal.left;
+    }
+
+    // 获取垂直滚动条向上的距离
+    private get verticalScrollBarTop() {
+        return store.getState('scrollBarConfig').vertical.top;
+    }
+
     public static getInstance (): GenerateData {
         if(!GenerateData.instance) {
             GenerateData.instance = new GenerateData();
@@ -23,7 +41,7 @@ class GenerateData {
         const scale = store.getState('scale') || 1;
         const sheetConfig = store.getState('sheetConfig');
         const { widths, heights, defaultCellItem, cols = 0, rows = 0 } = sheetConfig;
-        const scrollBarConfig = store.getState('scrollBarConfig');
+        // const scrollBarConfig = store.getState('scrollBarConfig');
         if (!defaultCellItem) {
             console.warn('defaultCellItem 未设置，请检查 sheetConfig 的初始化');
             return;
@@ -48,32 +66,31 @@ class GenerateData {
             height: totalHeight,
         });
 
-        const { width, height } = store.getState('containerSize');
+        const { width, height } = this.containerSize;
         // 解构获取到滚动条的最小宽度和最小高度
         const { minSize } = store.getState('scrollBarConfig');
 
         // 计算水平滚动条的宽度 减去滚动条的尺寸加上边框的尺寸
-        const horizontalScrollBarWidth = width - scrollBarConfig.size + scrollBarConfig.borderWidth;
+        const horizontalScrollBarWidth = width - this.scrollBarConfig.size + this.scrollBarConfig.borderWidth;
         // 计算垂直滚动条的高度 减去滚动条的尺寸加上边框的尺寸
-        const verticalScrollBarHeight = height - scrollBarConfig.size + scrollBarConfig.borderWidth;
+        const verticalScrollBarHeight = height - this.scrollBarConfig.size + this.scrollBarConfig.borderWidth;
 
          // 计算水平滚动条
          const horizontalScrollBar = {
-            ...scrollBarConfig.horizontal,
+            ...this.scrollBarConfig.horizontal,
             show: totalWidth > width,
             width: Math.max((horizontalScrollBarWidth / totalWidth) * horizontalScrollBarWidth, minSize),
             scrollBgWidth: horizontalScrollBarWidth,
         }
-
         // 计算垂直滚动条
         const verticalScrollBar = {
-            ...scrollBarConfig.vertical,
+            ...this.scrollBarConfig.vertical,
             show: totalHeight > height,
             height: Math.max((verticalScrollBarHeight / totalHeight) * verticalScrollBarHeight, minSize),
             scrollBgHeight: verticalScrollBarHeight,
         }
         store.setState('scrollBarConfig', {
-            ...scrollBarConfig,
+            ...this.scrollBarConfig,
             horizontal: horizontalScrollBar,
             vertical: verticalScrollBar,
         });
@@ -81,7 +98,7 @@ class GenerateData {
 
     // 生成当前的canvas画布能绘制的单元格数据
     private generateCellData(): void {
-        const { width, height } = store.getState('containerSize');
+        const { width, height } = this.containerSize;
         const sheetConfig = store.getState('sheetConfig');    
         const scale = store.getState('scale') || 1;
         const { defaultCellItem, cols = 0, rows = 0 } = sheetConfig;

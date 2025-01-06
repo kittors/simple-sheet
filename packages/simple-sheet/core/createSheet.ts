@@ -43,8 +43,11 @@ class CreateSheet {
         });
 
         // 监听滚动条的变化
-        store.watch('scrollBarConfig', (newValue) => {
-           console.log(newValue.vertical.top);
+        store.watch('scrollBarConfig', (newValue, oldValue) => {
+           // 检查垂直滚动条 top 和 水平滚动条的 left 是否变化
+           if(newValue.vertical.top !== oldValue.vertical.top || newValue.horizontal.left !== oldValue.horizontal.left) {
+            console.log('垂直滚动条 top 或 水平滚动条的 left 发生变化');
+           }
         }, {
             immediate: false,
             deep: true,

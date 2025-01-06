@@ -9,13 +9,16 @@ class HorizontalScrollBar {
     private isDragging = false;
     private startX = 0;
     private scrollLeft = 0;
-    private scrollConfig = Store.getState('scrollBarConfig');
-
+    private get scrollConfig() {
+        return this.store.getState('scrollBarConfig');
+    }
     constructor() {
         this.init();
     }
 
     private init(): void {
+        const {show} = this.scrollConfig.horizontal;
+        if(!show) return;
         const horizontalConfig = this.scrollConfig.horizontal;
         const prefix = this.store.getState('prefix');
 
@@ -92,7 +95,7 @@ class HorizontalScrollBar {
             this.store.setState('scrollBarConfig', {
                 ...this.scrollConfig,
                 horizontal: {
-                    ...config,
+                    ...this.scrollConfig.horizontal,
                     left: newLeft,
                 },
             });
@@ -146,11 +149,13 @@ class HorizontalScrollBar {
             
             const newLeft = Math.max(0, Math.min(currentLeft + scrollDistance, config.scrollBgWidth - config.width));
 
+            // 一样的newTop 数据 就不需要再更新了
+            if (newLeft === currentLeft) return;
             // 直接更新位置，不使用过渡动画
             this.store.setState('scrollBarConfig', {
                 ...this.scrollConfig,
                 horizontal: {
-                    ...config,
+                    ...this.scrollConfig.horizontal,
                     left: newLeft,
                 },
             });

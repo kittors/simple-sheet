@@ -18,6 +18,8 @@ class VerticalScrollBar {
     }
 
     private init(): void {          
+        const {show} = this.scrollConfig.vertical;
+        if(!show) return;
         const verticalConfig = this.scrollConfig.vertical;
         const prefix = this.store.getState('prefix');
 
@@ -88,7 +90,7 @@ class VerticalScrollBar {
         if (this.scrollBarSliderElement) {
             const newTop = Math.max(0, Math.min(this.scrollTop + dy, config.scrollBgHeight - config.height));
             this.store.setState('scrollBarConfig', {
-                ...this.store.getState('scrollBarConfig'),
+                ...this.scrollConfig,
                 vertical: {
                     ...this.scrollConfig.vertical,
                     top: newTop,
@@ -144,6 +146,8 @@ class VerticalScrollBar {
             
             const newTop = Math.max(0, Math.min(currentTop + scrollDistance, config.scrollBgHeight - config.height));
             
+            // 一样的newTop 数据 就不需要再更新了
+            if (newTop === currentTop) return;
             // 直接更新位置，不使用过渡动画
             this.store.setState('scrollBarConfig', {
                 ...this.scrollConfig,
@@ -152,7 +156,6 @@ class VerticalScrollBar {
                     top: newTop,
                 },
             });
-            
             this.scrollBarSliderElement.style.top = `${newTop}px`;
         }) as EventListener, { passive: false });
     }
