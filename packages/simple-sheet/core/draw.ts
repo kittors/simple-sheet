@@ -61,51 +61,74 @@ class Draw {
         await generateData();
         const cells = store.getState('drawCellData');
         
-        // 遍历所有单元格
         cells.forEach((cell, key) => {
             const [row, col] = key.split(',').map(Number);
-            
             const x = Math.floor(cell.x);
             const y = Math.floor(cell.y);
             const width = Math.floor(cell.width);
             const height = Math.floor(cell.height);
 
-            // 添加背景颜色绘制
-            if (cell.backgroundColor) {
-                this.ctx!.fillStyle = cell.backgroundColor;
-                this.ctx!.fillRect(x, y, width, height);
-            }
-            
-            // 原有的边框绘制代码
-            this.ctx!.beginPath();
-            this.ctx!.strokeStyle = cell.borderColor;
-            const borderWidth = Math.max(0.3, Math.round(cell.borderSize));
-            this.ctx!.lineWidth = borderWidth;
-            
-            // 分别绘制四条边，避免重复绘制
-            // 上边框 - 只在第一行或者上一行的单元格不存在时绘制
-            if (row === 0 || !cells.has(`${row-1},${col}`)) {
-                this.ctx!.moveTo(x, y);
-                this.ctx!.lineTo(x + width, y);
-            }
-            
-            // 右边框 - 总是绘制
-            this.ctx!.moveTo(x + width, y);
-            this.ctx!.lineTo(x + width, y + height);
-            
-            // 下边框 - 总是绘制
-            this.ctx!.moveTo(x, y + height);
-            this.ctx!.lineTo(x + width, y + height);
-            
-            // 左边框 - 只在第一列或者左边的单元格不存在时绘制
-            if (col === 0 || !cells.has(`${row},${col-1}`)) {
-                this.ctx!.moveTo(x, y);
-                this.ctx!.lineTo(x, y + height);
-            }
-            
-            this.ctx!.stroke();
-            this.ctx!.closePath();
+            // 绘制背景色
+            this.drawCellBackground(cell, x, y, width, height);
+            // 绘制边框
+            this.drawCellBorders(cell, x, y, width, height, row, col, cells);
         });
+    }
+
+    // 绘制单元格背景
+    private drawCellBackground(
+        cell: any, 
+        x: number, 
+        y: number, 
+        width: number, 
+        height: number
+    ) {
+        if (!this.ctx || !cell.backgroundColor) return;
+        
+        this.ctx.fillStyle = cell.backgroundColor;
+        this.ctx.fillRect(x, y, width, height);
+    }
+
+    // 绘制单元格边框
+    private drawCellBorders(
+        cell: any, 
+        x: number, 
+        y: number, 
+        width: number, 
+        height: number,
+        row: number,
+        col: number,
+        cells: Map<string, any>
+    ) {
+        if (!this.ctx) return;
+
+        this.ctx.beginPath();
+        this.ctx.strokeStyle = cell.borderColor;
+        const borderWidth = Math.max(0.3, Math.round(cell.borderSize));
+        this.ctx.lineWidth = borderWidth;
+        
+        // 上边框
+        if (row === 0 || !cells.has(`${row-1},${col}`)) {
+            this.ctx.moveTo(x, y);
+            this.ctx.lineTo(x + width, y);
+        }
+        
+        // 右边框
+        this.ctx.moveTo(x + width, y);
+        this.ctx.lineTo(x + width, y + height);
+        
+        // 下边框
+        this.ctx.moveTo(x, y + height);
+        this.ctx.lineTo(x + width, y + height);
+        
+        // 左边框
+        if (col === 0 || !cells.has(`${row},${col-1}`)) {
+            this.ctx.moveTo(x, y);
+            this.ctx.lineTo(x, y + height);
+        }
+        
+        this.ctx.stroke();
+        this.ctx.closePath();
     }
 
     // 清除画布

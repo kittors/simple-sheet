@@ -32,6 +32,23 @@ declare interface NewSheetConfig extends SheetConfig {
        /** 行高集合，key 为行索引，value 为高度 */
        heights?: Map<number, number>;
 }
+
+interface ContentStyle {
+    /** 字体颜色 */
+    color?: string;
+    /** 字体大小 */
+    fontSize?: number;
+    /** 字体粗细 */
+    fontWeight?: string;
+    /** 字体对齐方式 */
+    textAlign?: string;
+    /** 字体 */
+    fontFamily?: string;
+    /** 字体换行 */
+    whiteSpace?: string;
+    /** 字体行高 */
+    lineHeight?: number;
+}
   
 
 declare interface DrawCellDataItem {
@@ -53,6 +70,11 @@ declare interface DrawCellDataItem {
     isFixed?: boolean;
     /** 背景颜色 */
     backgroundColor?: string;
+    /** 单元格内容 */
+    content?: string;
+    /** 单元格内容样式 */
+    contentStyle?: ContentStyle;
 }
+
 
 
