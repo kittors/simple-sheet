@@ -193,11 +193,15 @@ class VerticalScrollBar {
                 this.scrollBarSliderElement.style.top = `${vertical.top}px`;
                 this.scrollBarSliderElement.style.width = `${size - newConfig.gap}px`;
                 this.scrollBarSliderElement.style.height = `${vertical.height}px`;
-                this.scrollBarSliderElement.style.backgroundColor = color;
                 this.scrollBarSliderElement.style.borderRadius = `${borderRadius}px`;
                 
                 // 更新显示/隐藏状态
                 this.scrollBarElement.style.display = vertical.show ? 'block' : 'none';
+
+                // 修改这里：只在非拖动状态下更新背景色
+                if (!this.isDragging) {
+                    this.scrollBarSliderElement.style.backgroundColor = color;
+                }
             },
             {
                 immediate: true,

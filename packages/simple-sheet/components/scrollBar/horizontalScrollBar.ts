@@ -176,7 +176,6 @@ class HorizontalScrollBar {
     private watchScrollBarConfig(): void {
         this.store.watch('scrollBarConfig', 
             (newConfig) => {
-                
                 if (!this.scrollBarElement || !this.scrollBarSliderElement) return;
                 const horizontalConfig = this.scrollConfig.horizontal;
                 const { horizontal, size, color, borderRadius } = newConfig;
@@ -194,11 +193,15 @@ class HorizontalScrollBar {
                 this.scrollBarSliderElement.style.left = `${horizontal.left}px`;
                 this.scrollBarSliderElement.style.height = `${size - newConfig.gap}px`;
                 this.scrollBarSliderElement.style.width = `${horizontal.width}px`;
-                this.scrollBarSliderElement.style.backgroundColor = color;
                 this.scrollBarSliderElement.style.borderRadius = `${borderRadius}px`;
 
                 // 更新显示/隐藏状态
                 this.scrollBarElement.style.display = horizontal.show ? 'block' : 'none';
+
+                // 修改这里：只在非拖动状态下更新背景色
+                if (!this.isDragging) {
+                    this.scrollBarSliderElement.style.backgroundColor = color;
+                }
             },
             {
                 immediate: true,
