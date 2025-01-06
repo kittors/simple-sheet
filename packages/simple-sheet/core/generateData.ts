@@ -70,15 +70,22 @@ class GenerateData {
         // 解构获取到滚动条的最小宽度和最小高度
         const { minSize } = store.getState('scrollBarConfig');
 
-        // 计算水平滚动条的宽度 减去滚动条的尺寸加上边框的尺寸
-        const horizontalScrollBarWidth = width - this.scrollBarConfig.size + this.scrollBarConfig.borderWidth;
-        // 计算垂直滚动条的高度 减去滚动条的尺寸加上边框的尺寸
-        const verticalScrollBarHeight = height - this.scrollBarConfig.size + this.scrollBarConfig.borderWidth;
+        const isShowHorizontalScrollBar = totalWidth > width;
+        const isShowVerticalScrollBar = totalHeight > height;
+
+        // 计算实际可用区域，需要考虑两个滚动条互相影响的情况
+        const scrollBarSize = this.scrollBarConfig.size - this.scrollBarConfig.borderWidth;
+        
+        // 计算水平滚动条的宽度，需要考虑垂直滚动条占用的空间
+        const horizontalScrollBarWidth = width - (isShowVerticalScrollBar ? scrollBarSize : 0);
+        
+        // 计算垂直滚动条的高度，需要考虑水平滚动条占用的空间
+        const verticalScrollBarHeight = height - (isShowHorizontalScrollBar ? scrollBarSize : 0);
 
          // 计算水平滚动条
          const horizontalScrollBar = {
             ...this.scrollBarConfig.horizontal,
-            show: totalWidth > width,
+            show: isShowHorizontalScrollBar,
             width: Math.max((horizontalScrollBarWidth / totalWidth) * horizontalScrollBarWidth, minSize),
             scrollBgWidth: horizontalScrollBarWidth,
             left: this.scrollBarConfig.horizontal.left || 0,
@@ -86,7 +93,7 @@ class GenerateData {
         // 计算垂直滚动条
         const verticalScrollBar = {
             ...this.scrollBarConfig.vertical,
-            show: totalHeight > height,
+            show: isShowVerticalScrollBar,
             height: Math.max((verticalScrollBarHeight / totalHeight) * verticalScrollBarHeight, minSize),
             scrollBgHeight: verticalScrollBarHeight,
             top: this.scrollBarConfig.vertical.top || 0,
@@ -128,9 +135,27 @@ class GenerateData {
             accumulatedHeights[i] = currentHeight;
         }
 
-        // 计算实际的滚动偏移量
-        const maxHorizontalScroll = currentWidth - width;
-        const maxVerticalScroll = currentHeight - height;
+        // 添加边距配置（可以根据需要调整）
+        const marginRight = this.scrollBarConfig.vertical.show ? this.scrollBarConfig.size - this.scrollBarConfig.borderWidth : 0;
+        const marginBottom = this.scrollBarConfig.horizontal.show ? this.scrollBarConfig.size - this.scrollBarConfig.borderWidth : 0;
+
+        // 添加表头配置
+        const headerConfig = store.getState('sheetConfig').headerConfig || {
+            rowHeaderWidth: 40,  // 行表头宽度
+            colHeaderHeight: 25  // 列表头高度
+        };
+
+        // 应用缩放到表头尺寸
+        const scaledRowHeaderWidth = headerConfig.rowHeaderWidth * scale;
+        const scaledColHeaderHeight = headerConfig.colHeaderHeight * scale;
+
+        // 计算可视区域（不包括表头）
+        const viewportWidth = width - scaledRowHeaderWidth;  // 使用缩放后的宽度
+        const viewportHeight = height - scaledColHeaderHeight;  // 使用缩放后的高度
+
+        // 修改最大滚动范围的计算，需要考虑表头占用的空间
+        const maxHorizontalScroll = currentWidth - viewportWidth + marginRight;
+        const maxVerticalScroll = currentHeight - viewportHeight + marginBottom;
         const horizontalScrollRange = this.scrollBarConfig.horizontal.scrollBgWidth - this.scrollBarConfig.horizontal.width;
         const verticalScrollRange = this.scrollBarConfig.vertical.scrollBgHeight - this.scrollBarConfig.vertical.height;
         
@@ -176,9 +201,11 @@ class GenerateData {
                 const colIndex = startCol + j;
                 const key = `${rowIndex},${colIndex}`;
 
-                // 使用预计算的累积值计算位置
-                const x = -horizontalLeft + (colIndex > 0 ? accumulatedWidths[colIndex - 1] : 0);
-                const y = -verticalTop + (rowIndex > 0 ? accumulatedHeights[rowIndex - 1] : 0);
+                // 内容区域的单元格位置计算
+                const x = scaledRowHeaderWidth - horizontalLeft +  // 使用缩放后的表头宽度
+                    (colIndex > 0 ? accumulatedWidths[colIndex - 1] : 0);
+                const y = scaledColHeaderHeight - verticalTop +  // 使用缩放后的表头高度
+                    (rowIndex > 0 ? accumulatedHeights[rowIndex - 1] : 0);
 
                 drawCellData.set(key, { 
                     x, 
@@ -190,6 +217,56 @@ class GenerateData {
                 });
             }
         }
+
+        // 添加固定的行头单元格
+        for(let i = 0; i < currentRows; i++) {
+            const rowIndex = startRow + i;
+            const key = `${rowIndex},header`;
+            const y = scaledColHeaderHeight - verticalTop +  // 使用缩放后的表头高度
+                (rowIndex > 0 ? accumulatedHeights[rowIndex - 1] : 0);
+            
+            drawCellData.set(key, {
+                x: 0,
+                y,
+                width: scaledRowHeaderWidth,  // 使用缩放后的宽度
+                height: (heights.get(rowIndex) || cellHeight) * scale,
+                borderSize,
+                borderColor,
+                isHeader: true,
+                backgroundColor: '#f5f5f5'
+            });
+        }
+
+        // 添加固定的列头单元格
+        for(let j = 0; j < currentCols; j++) {
+            const colIndex = startCol + j;
+            const key = `header,${colIndex}`;
+            const x = scaledRowHeaderWidth - horizontalLeft +  // 使用缩放后的表头宽度
+                (colIndex > 0 ? accumulatedWidths[colIndex - 1] : 0);
+
+            drawCellData.set(key, {
+                x,
+                y: 0,
+                width: (widths.get(colIndex) || cellWidth) * scale,
+                height: scaledColHeaderHeight,  // 使用缩放后的高度
+                borderSize,
+                borderColor,
+                isHeader: true,
+                backgroundColor: '#f5f5f5'
+            });
+        }
+
+        // 添加左上角的交叉单元格
+        drawCellData.set('header,header', {
+            x: 0,
+            y: 0,
+            width: scaledRowHeaderWidth,  // 使用缩放后的宽度
+            height: scaledColHeaderHeight,  // 使用缩放后的高度
+            borderSize,
+            borderColor,
+            isHeader: true,
+            backgroundColor: '#f5f5f5'
+        });
 
         store.setState('drawCellData', drawCellData);
     }

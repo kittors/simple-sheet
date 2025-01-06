@@ -19,6 +19,11 @@ declare  interface SheetConfig extends BaseConfig {
     heights: Map<number, number>;
     /** 列宽集合，key 为列索引，value 为宽度 */
     scale?: number;
+    /** 表头配置 */
+    headerConfig?: {
+        rowHeaderWidth: number;
+        colHeaderHeight: number;
+    };
 }
 
 declare interface NewSheetConfig extends SheetConfig {
@@ -36,6 +41,8 @@ declare interface DrawCellDataItem {
     height: number,
     borderSize: number,
     borderColor: string,
+    isHeader?: boolean;
+    backgroundColor?: string;
 }
 
 

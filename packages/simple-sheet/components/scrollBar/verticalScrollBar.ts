@@ -26,12 +26,20 @@ class VerticalScrollBar {
         // 创建滚动条容器
         const scrollBar = document.createElement('div');
         scrollBar.className = `${prefix}-vertical-scrollbar`;
+        
+        // 修改这里：当水平滚动条不显示时，垂直滚动条高度应该等于容器高度
+        const height = this.scrollConfig.horizontal.show 
+            ? verticalConfig.scrollBgHeight 
+            : this.store.getState('containerSize').height;
+
+            console.log(height);
+
         scrollBar.style.cssText = `
             position: absolute;
             top: 0;
             right: 0;
             width: ${this.scrollConfig.size}px;
-            height: ${verticalConfig.scrollBgHeight}px;
+            height: ${height}px;
             background-color: ${this.scrollConfig.backgroundColor};
             z-index: 100;
             border-left: ${this.scrollConfig.borderWidth}px solid ${this.scrollConfig.borderColor};
@@ -66,6 +74,8 @@ class VerticalScrollBar {
         // 添加滚轮事件监听
         this.bindWheelEvent();
 
+        // 添加配置监听
+        this.watchScrollBarConfig();
     }
 
     private bindEvents(slider: HTMLDivElement): void {
@@ -158,6 +168,43 @@ class VerticalScrollBar {
             });
             this.scrollBarSliderElement.style.top = `${newTop}px`;
         }) as EventListener, { passive: false });
+    }
+
+    // 添加新方法来监听配置变化
+    private watchScrollBarConfig(): void {
+        this.store.watch('scrollBarConfig', 
+            (newConfig) => {
+                if (!this.scrollBarElement || !this.scrollBarSliderElement) return;
+
+                const verticalConfig = this.scrollConfig.vertical;
+                const { vertical, size, color, borderRadius } = newConfig;
+
+                // 修改这里：当水平滚动条不显示时，垂直滚动条高度应该等于容器高度
+                const height = this.scrollConfig.horizontal.show 
+                    ? verticalConfig.scrollBgHeight 
+                    : this.store.getState('containerSize').height;
+
+                // 更新滚动条高度
+                if(height !== parseFloat(this.scrollBarElement.style.height)) {
+                    this.scrollBarElement.style.height = `${height}px`;
+                }
+                                
+                // 更新滑块样式
+                this.scrollBarSliderElement.style.top = `${vertical.top}px`;
+                this.scrollBarSliderElement.style.width = `${size - newConfig.gap}px`;
+                this.scrollBarSliderElement.style.height = `${vertical.height}px`;
+                this.scrollBarSliderElement.style.backgroundColor = color;
+                this.scrollBarSliderElement.style.borderRadius = `${borderRadius}px`;
+                
+                // 更新显示/隐藏状态
+                this.scrollBarElement.style.display = vertical.show ? 'block' : 'none';
+            },
+            {
+                immediate: true,
+                once: false,
+                deep: true // 启用深度监听以捕获 vertical 对象的变化
+            }
+        );
     }
 }
 
