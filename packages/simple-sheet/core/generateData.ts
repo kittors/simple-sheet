@@ -32,8 +32,8 @@ class GenerateData {
 
     // 计算绘制需要的数据 计算的是热数据
     public generateData = async () => {
-        await Promise.resolve(this.generateCellData());
         await Promise.resolve(this.generateScrollBarConfig());
+        await Promise.resolve(this.generateCellData());
     }
 
     // 生成滚动条配置数据
@@ -81,6 +81,7 @@ class GenerateData {
             show: totalWidth > width,
             width: Math.max((horizontalScrollBarWidth / totalWidth) * horizontalScrollBarWidth, minSize),
             scrollBgWidth: horizontalScrollBarWidth,
+            left: this.scrollBarConfig.horizontal.left || 0,
         }
         // 计算垂直滚动条
         const verticalScrollBar = {
@@ -88,6 +89,7 @@ class GenerateData {
             show: totalHeight > height,
             height: Math.max((verticalScrollBarHeight / totalHeight) * verticalScrollBarHeight, minSize),
             scrollBgHeight: verticalScrollBarHeight,
+            top: this.scrollBarConfig.vertical.top || 0,
         }
         store.setState('scrollBarConfig', {
             ...this.scrollBarConfig,
@@ -101,7 +103,7 @@ class GenerateData {
         const { width, height } = this.containerSize;
         const sheetConfig = store.getState('sheetConfig');    
         const scale = store.getState('scale') || 1;
-        const { defaultCellItem, cols = 0, rows = 0 } = sheetConfig;
+        const { defaultCellItem, widths, heights, cols = 0, rows = 0 } = sheetConfig;
         
         if (!defaultCellItem) {
             console.warn('defaultCellItem 未设置，请检查 sheetConfig 的初始化');
@@ -109,22 +111,80 @@ class GenerateData {
         }
 
         const { width: cellWidth, height: cellHeight, borderSize, borderColor } = defaultCellItem;
-                
-        const scaledCellWidth = cellWidth * scale;
-        const scaledCellHeight = cellHeight * scale;
-                
-        const currentRows = Math.min(Math.ceil(height / scaledCellHeight), rows);
-        const currentCols = Math.min(Math.ceil(width / scaledCellWidth), cols);
-                
+        
+        // 预先计算并缓存每个位置的累积宽度和高度
+        const accumulatedWidths: number[] = new Array(cols);
+        const accumulatedHeights: number[] = new Array(rows);
+        
+        let currentWidth = 0;
+        for (let i = 0; i < cols; i++) {
+            currentWidth += (widths.get(i) || cellWidth) * scale;
+            accumulatedWidths[i] = currentWidth;
+        }
+        
+        let currentHeight = 0;
+        for (let i = 0; i < rows; i++) {
+            currentHeight += (heights.get(i) || cellHeight) * scale;
+            accumulatedHeights[i] = currentHeight;
+        }
+
+        // 计算实际的滚动偏移量
+        const maxHorizontalScroll = currentWidth - width;
+        const maxVerticalScroll = currentHeight - height;
+        const horizontalScrollRange = this.scrollBarConfig.horizontal.scrollBgWidth - this.scrollBarConfig.horizontal.width;
+        const verticalScrollRange = this.scrollBarConfig.vertical.scrollBgHeight - this.scrollBarConfig.vertical.height;
+        
+        const horizontalLeft = maxHorizontalScroll > 0 
+            ? (this.horizontalScrollBarLeft * maxHorizontalScroll / horizontalScrollRange)
+            : 0;
+        const verticalTop = maxVerticalScroll > 0 
+            ? (this.verticalScrollBarTop * maxVerticalScroll / verticalScrollRange)
+            : 0;
+
+        // 计算起始行和列
+        let startX = 0;
+        let startY = 0;
+        let startRow = 0;
+        let startCol = 0;
+
+        // 计算起始行和列
+        for (let i = 0; i < rows; i++) {
+            const customHeight = heights.get(i) || cellHeight;
+            if (startY + customHeight * scale > verticalTop) {
+                startRow = i;
+                break;
+            }
+            startY += customHeight * scale;
+        }
+
+        for (let j = 0; j < cols; j++) {
+            const customWidth = widths.get(j) || cellWidth;
+            if (startX + customWidth * scale > horizontalLeft) {
+                startCol = j;
+                break;
+            }
+            startX += customWidth * scale;
+        }
+            
+        const currentRows = Math.min(Math.ceil((height + verticalTop - startY) / (cellHeight * scale)), rows - startRow);
+        const currentCols = Math.min(Math.ceil((width + horizontalLeft - startX) / (cellWidth * scale)), cols - startCol);
+            
         const drawCellData = new Map<string, DrawCellDataItem>();
         for(let i = 0; i < currentRows; i++) {
             for(let j = 0; j < currentCols; j++) {
-                const key = `${i},${j}`;
+                const rowIndex = startRow + i;
+                const colIndex = startCol + j;
+                const key = `${rowIndex},${colIndex}`;
+
+                // 使用预计算的累积值计算位置
+                const x = -horizontalLeft + (colIndex > 0 ? accumulatedWidths[colIndex - 1] : 0);
+                const y = -verticalTop + (rowIndex > 0 ? accumulatedHeights[rowIndex - 1] : 0);
+
                 drawCellData.set(key, { 
-                    x: j * scaledCellWidth, 
-                    y: i * scaledCellHeight, 
-                    width: scaledCellWidth, 
-                    height: scaledCellHeight, 
+                    x, 
+                    y, 
+                    width: (widths.get(colIndex) || cellWidth) * scale, 
+                    height: (heights.get(rowIndex) || cellHeight) * scale, 
                     borderSize, 
                     borderColor 
                 });
