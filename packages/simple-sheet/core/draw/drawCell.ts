@@ -21,7 +21,11 @@ export class DrawCell {
         const cells = store.getState('drawCellData');
         
         cells.forEach((cell: any, key: string) => {
-            const [row, col] = key.split(',').map(Number);
+            const [rowStr, colStr] = key.split(',');
+            const row = rowStr === 'header' ? -1 : Number(rowStr);
+            const col = colStr === 'header' ? 0 : Number(colStr);
+            
+            // 确保所有坐标和尺寸都是整数
             const x = Math.floor(cell.x);
             const y = Math.floor(cell.y);
             const width = Math.floor(cell.width);

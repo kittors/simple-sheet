@@ -6,14 +6,18 @@ const defaultConfig: SheetConfig  = {
     defaultCellItem: {
         width: 80,
         height: 25,
-        borderSize: 0.3,
-        borderColor: '#000',
     },
+    lineSize: 0.3,
+    lineColor: '#000',
     widths: new Map(),
     heights: new Map(),
     headerConfig: {
         rowHeaderWidth: 40,
         colHeaderHeight: 25,
+        backgroundColor: '#575757',
+        fontColor: '#fff',
+        fontSize: 12,
+        fontFamily: 'Arial',
     },
 }
 

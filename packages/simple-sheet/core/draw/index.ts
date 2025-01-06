@@ -1,6 +1,7 @@
 import store from '../../store';
 import generateData from '../generateData';
 import { DrawCell } from './drawCell';
+import { DrawSheetLine } from './drawSheetLine';
 
 class Draw {
     private static instance: Draw;
@@ -8,6 +9,7 @@ class Draw {
     private canvas: HTMLCanvasElement | null = null;
     private dpr: number = window.devicePixelRatio || 1;
     private drawCell: DrawCell | null = null;
+    private drawSheetLine: DrawSheetLine | null = null;
 
     private constructor() {}
 
@@ -32,6 +34,11 @@ class Draw {
         await generateData();
         
         if (this.ctx) {
+            // 先绘制表格线
+            this.drawSheetLine = new DrawSheetLine(this.ctx);
+            this.drawSheetLine.drawLines();
+            
+            // 再绘制单元格
             this.drawCell = new DrawCell(this.ctx);
             this.drawCell.drawCells();
         }

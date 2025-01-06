@@ -23,7 +23,8 @@ class CreateSheet {
         this.createSheetContainer();
 
         // 监听缩放变化
-        store.watch('scale', () => {
+        store.watch('scale', (newVal) => {
+            console.log(newVal);
             draw.startDraw();
         }, {
             immediate: false,

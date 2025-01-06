@@ -7,8 +7,6 @@ declare interface BaseConfig {
 declare interface CellItem {
     width: number;
     height: number;
-    borderSize: number; 
-    borderColor: string;
 }
 
 declare  interface SheetConfig extends BaseConfig {
@@ -23,6 +21,10 @@ declare  interface SheetConfig extends BaseConfig {
     colHeaderContent?: Map<number, string>;
     /** 列宽集合，key 为列索引，value 为宽度 */
     scale?: number;
+    /** 线宽 */
+    lineSize?: number;
+    /** 线颜色 */
+    lineColor?: string;
     /** 表头配置 */
     headerConfig?: {
         /** 行头宽度 */
@@ -93,6 +95,7 @@ declare interface DrawCellDataItem {
     /** 是否是单元格 */
     isCell?: boolean;
 }
+
 
 
 

@@ -32,4 +32,14 @@ export const getHeaderContent = (
         // 默认列头从A开始
         return numberToColumnName(index);
     }
-} 
+}
+
+/**
+ * 统一处理数值精度，默认保留一位小数
+ * @param value 需要处理的数值
+ * @param precision 精度，默认为1
+ * @returns 处理后的数值
+ */
+export const formatNumber = (value: number, precision: number = 1): number => {
+    return Number(value.toFixed(precision));
+}; 

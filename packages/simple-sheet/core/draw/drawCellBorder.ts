@@ -1,19 +1,14 @@
-interface CellBorderProps {
-    borderColor?: string;
-    borderSize?: number;
-    isScrollBarIntersection?: boolean;
-}
-
 export class DrawCellBorder {
     private ctx: CanvasRenderingContext2D;
+    private readonly DEFAULT_BORDER_COLOR = '#000';
+    private readonly MIN_BORDER_WIDTH = 0.3;
 
     constructor(ctx: CanvasRenderingContext2D) {
         this.ctx = ctx;
     }
 
-    // 绘制单元格边框
     public draw(
-        cell: CellBorderProps, 
+        cell: DrawCellDataItem, 
         x: number, 
         y: number, 
         width: number, 
@@ -22,34 +17,29 @@ export class DrawCellBorder {
         col: number,
         cells: Map<string, any>
     ): void {
-        if (cell.isScrollBarIntersection) return;  // 如果是滚动条交叉区域，直接返回不绘制边框
+        // 如果单元格是滚动条交叉区域，或者没有设置边框，则直接返回
+        if (cell.isScrollBarIntersection || !cell.borderSize) return;
 
+        this.setupContext(cell);
+        this.drawBorders(x, y, width, height, row, col, cells);
+    }
+
+    private setupContext(cell: DrawCellDataItem): void {
         this.ctx.beginPath();
-        this.ctx.strokeStyle = cell.borderColor || '#000';
-        const borderWidth = Math.max(0.3, Math.round(cell.borderSize || 1));
-        this.ctx.lineWidth = borderWidth;
-        
-        // 上边框
-        if (row === 0 || !cells.has(`${row-1},${col}`)) {
-            this.ctx.moveTo(x, y);
-            this.ctx.lineTo(x + width, y);
-        }
-        
-        // 右边框
-        this.ctx.moveTo(x + width, y);
-        this.ctx.lineTo(x + width, y + height);
-        
-        // 下边框
-        this.ctx.moveTo(x, y + height);
-        this.ctx.lineTo(x + width, y + height);
-        
-        // 左边框
-        if (col === 0 || !cells.has(`${row},${col-1}`)) {
-            this.ctx.moveTo(x, y);
-            this.ctx.lineTo(x, y + height);
-        }
-        
-        this.ctx.stroke();
-        this.ctx.closePath();
+        this.ctx.strokeStyle = cell.borderColor || this.DEFAULT_BORDER_COLOR;
+        this.ctx.lineWidth = Math.max(this.MIN_BORDER_WIDTH, Math.round(cell.borderSize || 1));
+    }
+
+    private drawBorders(
+        x: number, 
+        y: number, 
+        width: number, 
+        height: number,
+        row: number,
+        col: number,
+        cells: Map<string, any>
+    ): void {
+        // 直接绘制完整边框
+        this.ctx.strokeRect(x, y, width, height);
     }
 } 

@@ -6,9 +6,27 @@ export class Scale implements Controller {
     private minScale = 0.1;
     private maxScale = 3;
     private scaleStep = 0.1;
+    private debounceTimer: number | null = null;  // 添加防抖定时器
 
     constructor() {
         this.init();
+    }
+
+    private updateScale(scale: number): void {
+        if (this.debounceTimer) {
+            clearTimeout(this.debounceTimer);
+        }
+
+        this.debounceTimer = window.setTimeout(() => {
+            const currentScale = store.getState('scale') || 1;
+            const newScale = Number(scale.toFixed(1));
+            const currentScaleFixed = Number(currentScale.toFixed(1));
+            
+            if (newScale !== currentScaleFixed) {
+                store.setState('scale', newScale);
+            }
+            this.debounceTimer = null;
+        }, 50);
     }
 
     private zoomIn(): void {
@@ -21,10 +39,6 @@ export class Scale implements Controller {
         const currentScale = store.getState('scale') || 1;
         const newScale = Math.max(this.minScale, currentScale - this.scaleStep);
         this.updateScale(newScale);
-    }
-
-    private updateScale(scale: number): void {
-        store.setState('scale', scale);
     }
 
     // 公共方法：设置缩放比例

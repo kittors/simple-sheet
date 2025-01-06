@@ -1,5 +1,10 @@
 import store from '../../store';
-import { getHeaderContent } from '../../utils';
+import { getHeaderContent, formatNumber } from '../../utils';
+
+// 添加精度控制方法
+const formatWithPrecision = (num: number): number => {
+    return formatNumber(num, 6);
+};
 
 export function generateCellData(): void {
     const { width, height } = store.getState('containerSize');
@@ -13,7 +18,7 @@ export function generateCellData(): void {
         return;
     }
 
-    const { width: cellWidth, height: cellHeight, borderSize, borderColor } = defaultCellItem;
+    const { width: cellWidth, height: cellHeight} = defaultCellItem;
     
     // 预先计算并缓存每个位置的累积宽度和高度
     const accumulatedWidths: number[] = new Array(cols);
@@ -21,13 +26,15 @@ export function generateCellData(): void {
     
     let currentWidth = 0;
     for (let i = 0; i < cols; i++) {
-        currentWidth += (widths.get(i) || cellWidth) * scale;
+        const cellW = Math.round((widths.get(i) || cellWidth) * scale);
+        currentWidth += cellW;
         accumulatedWidths[i] = currentWidth;
     }
     
     let currentHeight = 0;
     for (let i = 0; i < rows; i++) {
-        currentHeight += (heights.get(i) || cellHeight) * scale;
+        const cellH = Math.round((heights.get(i) || cellHeight) * scale);
+        currentHeight += cellH;
         accumulatedHeights[i] = currentHeight;
     }
 
@@ -42,8 +49,8 @@ export function generateCellData(): void {
     };
 
     // 应用缩放到表头尺寸
-    const scaledRowHeaderWidth = headerConfig.rowHeaderWidth * scale;
-    const scaledColHeaderHeight = headerConfig.colHeaderHeight * scale;
+    const scaledRowHeaderWidth = Math.round(headerConfig.rowHeaderWidth * scale);
+    const scaledColHeaderHeight = Math.round(headerConfig.colHeaderHeight * scale);
 
     // 计算可视区域（不包括表头）
     const viewportWidth = width - scaledRowHeaderWidth;
@@ -98,18 +105,16 @@ export function generateCellData(): void {
             const colIndex = startCol + j;
             const key = `${rowIndex},${colIndex}`;
 
-            const x = scaledRowHeaderWidth - horizontalLeft + 
-                (colIndex > 0 ? accumulatedWidths[colIndex - 1] : 0);
-            const y = scaledColHeaderHeight - verticalTop + 
-                (rowIndex > 0 ? accumulatedHeights[rowIndex - 1] : 0);
+            const x = Math.round(scaledRowHeaderWidth - horizontalLeft + 
+                (colIndex > 0 ? accumulatedWidths[colIndex - 1] : 0));
+            const y = Math.round(scaledColHeaderHeight - verticalTop + 
+                (rowIndex > 0 ? accumulatedHeights[rowIndex - 1] : 0));
 
             drawCellData.set(key, { 
-                x, 
-                y, 
-                width: (widths.get(colIndex) || cellWidth) * scale, 
-                height: (heights.get(rowIndex) || cellHeight) * scale, 
-                borderSize, 
-                borderColor,
+                x,
+                y,
+                width: Math.round((widths.get(colIndex) || cellWidth) * scale),
+                height: Math.round((heights.get(rowIndex) || cellHeight) * scale),
                 isCell: true
             });
         }
@@ -121,14 +126,12 @@ export function generateCellData(): void {
         const key = `${rowIndex},header`;
         const y = scaledColHeaderHeight - verticalTop + 
             (rowIndex > 0 ? accumulatedHeights[rowIndex - 1] : 0);
-        
+        console.log(Math.round(y));
         drawCellData.set(key, {
             x: 0,
-            y,
+            y: Math.round(y),
             width: scaledRowHeaderWidth,
-            height: (heights.get(rowIndex) || cellHeight) * scale,
-            borderSize,
-            borderColor,
+            height: Math.round((heights.get(rowIndex) || cellHeight) * scale),
             isHeader: true,
             backgroundColor: '#f5f5f5',
             content: getHeaderContent('row', rowIndex, rowHeaderContent, colHeaderContent),
@@ -148,12 +151,10 @@ export function generateCellData(): void {
             (colIndex > 0 ? accumulatedWidths[colIndex - 1] : 0);
 
         drawCellData.set(key, {
-            x,
+            x: Math.round(x),
             y: 0,
-            width: (widths.get(colIndex) || cellWidth) * scale,
+            width: Math.round((widths.get(colIndex) || cellWidth) * scale),
             height: scaledColHeaderHeight,
-            borderSize,
-            borderColor,
             isHeader: true,
             backgroundColor: '#f5f5f5',
             content: getHeaderContent('col', colIndex, rowHeaderContent, colHeaderContent),
@@ -171,8 +172,6 @@ export function generateCellData(): void {
         y: 0,
         width: scaledRowHeaderWidth,
         height: scaledColHeaderHeight,
-        borderSize,
-        borderColor,
         isHeader: true,
         backgroundColor: '#f5f5f5'
     });
