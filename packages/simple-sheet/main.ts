@@ -3,6 +3,8 @@ import store from './store';
 import createSheet from './core/createSheet';
 import ScrollBarManager from './components/scrollBar';
 import Loading from './components/loading';
+import controlManager from './core/control';
+import container from './components/container';
 
 class SimpleSheet {
 
@@ -18,12 +20,18 @@ class SimpleSheet {
     }
     public async create (newSheetConfig: NewSheetConfig) {
         store.setState('isLoading', true);
-        if ( !store.getState('isCreate') ) {
-            store.setState('isCreate', true);
-        }
 
-        // 等待 setSheetConfig 完成
+        // 设置配置
         await Promise.resolve(this.setSheetConfig(newSheetConfig));
+
+        // 初始化容器
+        await Promise.resolve(container.init());
+
+        // 加载Loaidng Loading是依赖于容器 所以需要等容器加载完成
+        await Promise.resolve(Loading.init());
+
+        // 加载控制器
+        await Promise.resolve(controlManager.loadAllControllers());
 
         // 绘制表格
         await Promise.resolve(createSheet.startCreateSheet());
@@ -31,10 +39,7 @@ class SimpleSheet {
         // 绘制滚动条
         await Promise.resolve(ScrollBarManager.getInstance().getHorizontalScrollBar());
 
-        // 绘制表格完成
-        setTimeout(() => {
-            store.setState('isLoading', false);
-        }, 5000);
+        store.setState('isLoading', false);
     }
 
     private async setSheetConfig (newSheetConfig: NewSheetConfig) {

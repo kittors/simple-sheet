@@ -1,7 +1,7 @@
 type Listener = () => void;
 import type { State } from './type';
 import { Watcher } from '../common/watcher';
-
+import state from './state';
 type WatchCallback<T> = (newValue: T, oldValue: T) => void;
 
 interface WatchOptions {
@@ -14,55 +14,7 @@ class Store {
     private static instance: Store;
     private watcher: Watcher;
     
-    public state: State = {
-        isLoading: false,
-        isCreate: false,
-        isStartCreateSheet: false,
-        scale: 1,
-        isDraw: false,
-        prefix: 'simple-sheet',
-        containers: {
-            canvasContainer: '',
-        },
-        drawCellData: new Map(),
-        sheetTotalSize: {
-            width: 0,
-            height: 0,
-        },
-        scrollBarConfig: {
-            color: 'rgb(222, 224, 227)',
-            activeColor: 'rgb(180, 182, 185)',
-            backgroundColor: '#fff',
-            borderRadius: 5,
-            size: 16,
-            gap: 8,
-            borderColor: '#E8E9E9',
-            borderWidth: 1,
-            scrollSpeed: 0.1,
-            minSize: 20,
-            horizontal: {
-                show: false,
-                width: 0,
-                scrollBgWidth: 0,
-                left: 0,
-            },
-            vertical: {
-                show: false,
-                height: 0,
-                scrollBgHeight: 0,
-                top: 0,
-            },
-        },
-        sheetConfig: {
-            container: '',
-            widths: new Map(),
-            heights: new Map(),
-        },
-        containerSize: {
-            width: 0,
-            height: 0,
-        },
-    }
+    public state: State = state;
 
     private listeners: Listener[] = [];
 

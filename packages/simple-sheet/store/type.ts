@@ -10,16 +10,10 @@ interface LineData {
 }
 
 interface State {
-    /** 容器 */
-    containers: Containers;
+    /** 所有容器 */
+    containers: Record<'canvasContainer' | 'loadingContainer' | 'toolContainer', string>;
     /** 是否加载中 */
     isLoading: boolean;
-    /** 是否创建表格 */
-    isCreate: boolean;
-    /** 是否开始创建制表格 */
-    isStartCreateSheet: boolean;
-    /** 是否开始绘制表格 */
-    isDraw: boolean;
     /** 缩放比例 */
     scale: number;
     /** 表格配置 */
@@ -88,10 +82,6 @@ interface State {
     };
     /** 表格线条数据 */
     lineData?: LineData;
-}
-
-interface Containers {
-    canvasContainer: string;
 }
 
 

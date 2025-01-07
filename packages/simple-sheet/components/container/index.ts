@@ -38,6 +38,11 @@ class Container {
             parent: this.containerDom
         });
 
+        store.setState('containers', {
+            ...store.getState('containers'),
+            canvasContainer: this.sheetContainer.className
+        });
+
         store.setState('containerSize', {
             width: this.containerDom.clientWidth,
             height: this.containerDom.clientHeight

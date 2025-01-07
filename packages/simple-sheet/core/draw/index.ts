@@ -22,12 +22,8 @@ class Draw {
 
     // 开始绘制
     public async startDraw() {
-        const className = store.getState('prefix') + '-container';
+        const className = store.getState('containers').canvasContainer;
         const container = document.querySelector(`.${className}`);
-        store.setState('containers', {
-            ...store.getState('containers'),
-            canvasContainer: className
-        });
         if (!container) return;
 
         this.initCanvas(container as HTMLElement);

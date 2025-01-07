@@ -25,10 +25,6 @@ export class ControlManager {
         // 初始化缩放控制器
         this.registerController('scale', new Scale());
         
-        // 在这里可以继续注册其他控制器
-        // this.registerController('scroll', new Scroll());
-        // this.registerController('selection', new Selection());
-        // 等等...
     }
 
     private registerController(name: string, controller: Controller): void {
@@ -44,6 +40,13 @@ export class ControlManager {
     // 获取缩放控制器的快捷方法
     public getScaleController(): Scale {
         return this.getController<Scale>('scale')!;
+    }
+    
+    // 加载所有的控制器
+    public loadAllControllers(): void {
+        for (const controller of this.controllers.values()) {
+            controller.init();
+        }
     }
 }
 

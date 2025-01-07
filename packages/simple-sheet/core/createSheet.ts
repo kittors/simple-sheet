@@ -1,8 +1,5 @@
 import store from '../store';
 import draw from './draw';
-import controlManager from './control';
-import container from '../components/container';
-
 class CreateSheet {
     private static instance: CreateSheet;
 
@@ -16,10 +13,6 @@ class CreateSheet {
     }
 
     public startCreateSheet() {
-        if (!store.getState('isStartCreateSheet')) {
-            store.setState('isStartCreateSheet', true);
-        }
-        this.createSheetContainer();
         this.watchStoreChanges();
     }
 
@@ -50,15 +43,6 @@ class CreateSheet {
             deep: true,
             once: false
         });
-    }
-
-    private async createSheetContainer() {
-        container.init();
-        controlManager.getScaleController();
-    }
-
-    public getControlManager() {
-        return controlManager;
     }
 }
 

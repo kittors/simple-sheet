@@ -5,9 +5,7 @@ class Loading {
     private store = Store;
     private loadingElement: HTMLDivElement | null = null;
 
-    private constructor() {
-        this.init();
-    }
+    private constructor() {}
 
     public static getInstance(): Loading {
         if (!Loading.instance) {
@@ -16,7 +14,7 @@ class Loading {
         return Loading.instance;
     }
 
-    private init(): void {
+    public init(): void {
         // 监听 isLoading 状态变化
         this.store.watch('isLoading', 
             (isLoading) => {
@@ -37,9 +35,7 @@ class Loading {
         if (this.loadingElement) return;
         const prefix = this.store.getState('prefix');
         const className = this.store.getState('containers').canvasContainer;
-        console.log(className);
         const container = document.querySelector(`.${className}`);
-        console.log(container);
         if (!container) return;
 
         // 创建loading容器
@@ -105,4 +101,4 @@ class Loading {
     }
 }
 
-export default Loading; 
+export default Loading.getInstance(); 
