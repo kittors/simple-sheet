@@ -5,5 +5,3 @@
 export const isMac = (): boolean => {
     return /Mac|iPhone|iPad|iPod/.test(navigator.userAgent);
 };
-
-// 这里可以继续添加其他验证函数... 

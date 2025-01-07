@@ -51,9 +51,7 @@ export function generateLineData(): void {
             PreciseCalculator.subtract(containerSize.height, marginBottom)
         )
     );
-
-    console.log(marginRight,marginBottom);
-
+    
     // 计算滚动相关参数
     const horizontalScrollRange = PreciseCalculator.subtract(scrollConfig.horizontal.scrollBgWidth, scrollConfig.horizontal.width);
     const verticalScrollRange = PreciseCalculator.subtract(scrollConfig.vertical.scrollBgHeight, scrollConfig.vertical.height);
@@ -86,7 +84,7 @@ export function generateLineData(): void {
             verticalScrollRange || 1
           )
         : 0;
-        
+
     // 生成水平线数据
     const horizontalLines = [];
     horizontalLines.push({

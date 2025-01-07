@@ -1,7 +1,7 @@
 const defaultConfig: SheetConfig  = {
     container: 'simple-box',
     rows: 50,
-    cols: 100,
+    cols: 50,
     scale: 0.1,
     defaultCellItem: {
         width: 80,
