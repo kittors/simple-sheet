@@ -11,6 +11,7 @@ const defaultConfig: SheetConfig  = {
     lineColor: '#000',
     widths: new Map([[1, 300],[2, 300]]),
     heights: new Map([[1, 300],[2, 300]]),
+    frozen: [1,1],
     headerConfig: {
         rowHeaderWidth: 40,
         colHeaderHeight: 25,

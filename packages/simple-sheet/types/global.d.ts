@@ -40,6 +40,8 @@ declare  interface SheetConfig extends BaseConfig {
         /** 字体 */
         fontFamily: string;
     };
+    /** 冻结行列 0: 列 1: 行 */
+    frozen?: [number, number];
 }
 
 declare interface NewSheetConfig extends SheetConfig {
@@ -106,6 +108,8 @@ declare interface DrawCellDataItem {
     isScrollBarIntersection?: boolean;
     /** 是否是单元格 */
     isCell?: boolean;
+    /** 是否是冻结单元格 */
+    isFrozen?: boolean;
 }
 
 

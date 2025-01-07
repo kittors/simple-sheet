@@ -7,7 +7,7 @@ export function generateCellData(): void {
     const sheetConfig = store.getState('sheetConfig');    
     const scale = store.getState('scale') || 1;
     const scrollBarConfig = store.getState('scrollBarConfig');
-    const { defaultCellItem, widths, heights, cols = 0, rows = 0, rowHeaderContent, colHeaderContent } = sheetConfig;
+    const { defaultCellItem, widths, heights, cols = 0, rows = 0, rowHeaderContent, colHeaderContent, frozen = [0, 0] } = sheetConfig;
     
     if (!defaultCellItem) {
         console.warn('defaultCellItem 未设置，请检查 sheetConfig 的初始化');
@@ -111,6 +111,48 @@ export function generateCellData(): void {
     );
         
     const drawCellData = new Map<string, DrawCellDataItem>();
+
+    const [frozenCols, frozenRows] = frozen;
+
+    // 生成冻结区域的单元格
+    for (let i = 0; i < frozenRows; i++) {
+        for (let j = 0; j < cols; j++) {
+            if (j < startCol && j >= frozenCols) continue;
+            
+            const key = `${i},${j}`;
+            const x = j < frozenCols 
+                ? scaledRowHeaderWidth + (j > 0 ? accumulatedWidths[j - 1] : 0)
+                : scaledRowHeaderWidth + accumulatedWidths[j - 1] - horizontalLeft;
+            const y = scaledColHeaderHeight + (i > 0 ? accumulatedHeights[i - 1] : 0);
+
+            drawCellData.set(key, {
+                x,
+                y,
+                width: PreciseCalculator.multiply((widths.get(j) || cellWidth), scale),
+                height: PreciseCalculator.multiply((heights.get(i) || cellHeight), scale),
+                isCell: true,
+                isFrozen: true
+            });
+        }
+    }
+
+    // 生成冻结列的单元格
+    for (let i = frozenRows; i < rows; i++) {
+        for (let j = 0; j < frozenCols; j++) {
+            const key = `${i},${j}`;
+            const x = scaledRowHeaderWidth + (j > 0 ? accumulatedWidths[j - 1] : 0);
+            const y = scaledColHeaderHeight + accumulatedHeights[i - 1] - verticalTop;
+
+            drawCellData.set(key, {
+                x,
+                y,
+                width: PreciseCalculator.multiply((widths.get(j) || cellWidth), scale),
+                height: PreciseCalculator.multiply((heights.get(i) || cellHeight), scale),
+                isCell: true,
+                isFrozen: true
+            });
+        }
+    }
 
     // 生成内容区域的单元格
     for(let i = 0; i < currentRows; i++) {

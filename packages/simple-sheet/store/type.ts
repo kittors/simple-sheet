@@ -3,8 +3,10 @@ interface LineData {
     maxVisibleHeight: number;
     headerWidth: number;
     headerHeight: number;
-    horizontalLines: Array<{x1: number, y1: number, x2: number, y2: number}>;
-    verticalLines: Array<{x1: number, y1: number, x2: number, y2: number}>;
+    horizontalLines: Array<{x1: number, y1: number, x2: number, y2: number, isFrozenLine?: boolean}>;
+    verticalLines: Array<{x1: number, y1: number, x2: number, y2: number, isFrozenLine?: boolean}>;
+    frozenWidth: number;
+    frozenHeight: number;
 }
 
 interface State {

@@ -3,7 +3,7 @@ import PreciseCalculator from '../../common/calculator';
 
 export function generateLineData(): void {
     const sheetConfig = store.getState('sheetConfig');
-    const { defaultCellItem, widths, heights, cols = 0, rows = 0, headerConfig } = sheetConfig;
+    const { defaultCellItem, widths, heights, cols = 0, rows = 0, headerConfig, frozen = [0, 0] } = sheetConfig;
     const scale = store.getState('scale') || 1;
     const containerSize = store.getState('containerSize');
     const scrollConfig = store.getState('scrollBarConfig');
@@ -133,12 +133,56 @@ export function generateLineData(): void {
         }
     }
 
+    // 计算冻结位置
+    const [frozenCols, frozenRows] = frozen;
+    let frozenWidth = headerWidth;
+    let frozenHeight = headerHeight;
+
+    // 计算冻结列的总宽度
+    for (let i = 0; i < frozenCols; i++) {
+        frozenWidth = PreciseCalculator.add(
+            frozenWidth,
+            PreciseCalculator.multiply((widths.get(i) || defaultCellItem.width), scale)
+        );
+    }
+
+    // 计算冻结行的总高度
+    for (let i = 0; i < frozenRows; i++) {
+        frozenHeight = PreciseCalculator.add(
+            frozenHeight,
+            PreciseCalculator.multiply((heights.get(i) || defaultCellItem.height), scale)
+        );
+    }
+
+    // 添加冻结线
+    if (frozenCols > 0) {
+        verticalLines.push({
+            x1: frozenWidth,
+            y1: 0,
+            x2: frozenWidth,
+            y2: maxVisibleHeight,
+            isFrozenLine: true
+        });
+    }
+
+    if (frozenRows > 0) {
+        horizontalLines.push({
+            x1: 0,
+            y1: frozenHeight,
+            x2: maxVisibleWidth,
+            y2: frozenHeight,
+            isFrozenLine: true
+        });
+    }
+
     // 存储线条数据到 store
     store.setState('lineData', {
         maxVisibleWidth,
         maxVisibleHeight,
         headerWidth,
         headerHeight,
+        frozenWidth,
+        frozenHeight,
         horizontalLines,
         verticalLines
     });

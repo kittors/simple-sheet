@@ -18,20 +18,36 @@ export class DrawSheetLine {
         if (!lineData) return;
         
         this.setupContext();
+        
+        // 绘制普通线条
         this.ctx.beginPath();
-
-        // 绘制水平线
         lineData.horizontalLines.forEach(line => {
+            if (line.isFrozenLine) return;
             this.ctx.moveTo(line.x1, line.y1);
             this.ctx.lineTo(line.x2, line.y2);
         });
-
-        // 绘制垂直线
         lineData.verticalLines.forEach(line => {
+            if (line.isFrozenLine) return;
             this.ctx.moveTo(line.x1, line.y1);
             this.ctx.lineTo(line.x2, line.y2);
         });
+        this.ctx.stroke();
 
+        // 绘制冻结线条
+        this.ctx.beginPath();
+        this.ctx.strokeStyle = '#999';  // 冻结线使用更深的颜色
+        this.ctx.lineWidth = 2;  // 冻结线更粗
+        
+        lineData.horizontalLines.forEach(line => {
+            if (!line.isFrozenLine) return;
+            this.ctx.moveTo(line.x1, line.y1);
+            this.ctx.lineTo(line.x2, line.y2);
+        });
+        lineData.verticalLines.forEach(line => {
+            if (!line.isFrozenLine) return;
+            this.ctx.moveTo(line.x1, line.y1);
+            this.ctx.lineTo(line.x2, line.y2);
+        });
         this.ctx.stroke();
     }
 }
