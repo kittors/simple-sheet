@@ -77,6 +77,7 @@ interface State {
             /** 滚动条上边距 */
             top: number;
         };
+      
     };
     /** 清理 resize 事件 */
     cleanupResize?: () => void;

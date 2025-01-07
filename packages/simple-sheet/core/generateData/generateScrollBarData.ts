@@ -37,12 +37,23 @@ export function generateScrollBarConfig() {
     // 解构获取到滚动条的最小宽度和最小高度
     const { minSize } = scrollBarConfig;
 
-    const isShowHorizontalScrollBar = totalWidth > width;
-    const isShowVerticalScrollBar = totalHeight > height;
-
-    // 计算实际可用区域，需要考虑两个滚动条互相影响的情况
     const scrollBarSize = scrollBarConfig.size - scrollBarConfig.borderWidth;
     
+    // 初步判断是否需要显示滚动条
+    let isShowHorizontalScrollBar = totalWidth > width;
+    let isShowVerticalScrollBar = totalHeight > height;
+    
+    // 重新判断,考虑滚动条互相影响
+    if (isShowHorizontalScrollBar) {
+        // 如果显示水平滚动条,则需要用减去滚动条高度后的空间重新判断是否需要垂直滚动条
+        isShowVerticalScrollBar = totalHeight > (height - scrollBarSize);
+    }
+    
+    if (isShowVerticalScrollBar) {
+        // 如果显示垂直滚动条,则需要用减去滚动条宽度后的空间重新判断是否需要水平滚动条
+        isShowHorizontalScrollBar = totalWidth > (width - scrollBarSize);
+    }
+
     // 计算水平滚动条的宽度，需要考虑垂直滚动条占用的空间
     const horizontalScrollBarWidth = width - (isShowVerticalScrollBar ? scrollBarSize : 0);
     
@@ -61,7 +72,21 @@ export function generateScrollBarConfig() {
             minSize
         ),
         scrollBgWidth: horizontalScrollBarWidth,
-        left: scrollBarConfig.horizontal.left || 0,
+        left: isShowHorizontalScrollBar
+            ? Math.min(
+                scrollBarConfig.horizontal.left || 0,
+                PreciseCalculator.subtract(
+                    horizontalScrollBarWidth,
+                    PreciseCalculator.max(
+                        PreciseCalculator.multiply(
+                            PreciseCalculator.divide(horizontalScrollBarWidth, totalWidth),
+                            horizontalScrollBarWidth
+                        ),
+                        minSize
+                    )
+                )
+            )
+            : 0,
     }
 
     // 计算垂直滚动条
@@ -70,13 +95,27 @@ export function generateScrollBarConfig() {
         show: isShowVerticalScrollBar,
         height: PreciseCalculator.max(
             PreciseCalculator.multiply(
-                PreciseCalculator.divide(verticalScrollBarHeight , totalHeight),
+                PreciseCalculator.divide(verticalScrollBarHeight, totalHeight),
                 verticalScrollBarHeight
             ), 
             minSize
         ),
         scrollBgHeight: verticalScrollBarHeight,
-        top: scrollBarConfig.vertical.top || 0,
+        top: isShowVerticalScrollBar 
+            ? Math.min(
+                scrollBarConfig.vertical.top || 0,
+                PreciseCalculator.subtract(
+                    verticalScrollBarHeight,
+                    PreciseCalculator.max(
+                        PreciseCalculator.multiply(
+                            PreciseCalculator.divide(verticalScrollBarHeight, totalHeight),
+                            verticalScrollBarHeight
+                        ),
+                        minSize
+                    )
+                )
+            )
+            : 0,
     }
 
     store.setState('scrollBarConfig', {

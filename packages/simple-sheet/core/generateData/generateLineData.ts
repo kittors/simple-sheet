@@ -36,14 +36,23 @@ export function generateLineData(): void {
     }
 
     // 计算可见区域的最大范围（考虑滚动条和表头）
-    const maxVisibleWidth = Math.min(
-        PreciseCalculator.add(totalWidth, headerWidth),
-        PreciseCalculator.subtract(containerSize.width, marginRight)
+    const maxVisibleWidth = Math.max(
+        headerWidth,
+        Math.min(
+            PreciseCalculator.add(totalWidth, headerWidth),
+            PreciseCalculator.subtract(containerSize.width, marginRight)
+        )
     );
-    const maxVisibleHeight = Math.min(
-        PreciseCalculator.add(totalHeight, headerHeight),
-        PreciseCalculator.subtract(containerSize.height, marginBottom)
+
+    const maxVisibleHeight = Math.max(
+        headerHeight,
+        Math.min(
+            PreciseCalculator.add(totalHeight, headerHeight),
+            PreciseCalculator.subtract(containerSize.height, marginBottom)
+        )
     );
+
+    console.log(marginRight,marginBottom);
 
     // 计算滚动相关参数
     const horizontalScrollRange = PreciseCalculator.subtract(scrollConfig.horizontal.scrollBgWidth, scrollConfig.horizontal.width);
@@ -55,6 +64,7 @@ export function generateLineData(): void {
             marginRight
         )
     );
+
     const maxVerticalScroll = PreciseCalculator.subtract(
         totalHeight,
         PreciseCalculator.subtract(
@@ -76,7 +86,7 @@ export function generateLineData(): void {
             verticalScrollRange || 1
           )
         : 0;
-
+        
     // 生成水平线数据
     const horizontalLines = [];
     horizontalLines.push({
@@ -95,7 +105,7 @@ export function generateLineData(): void {
             verticalTop
         );
 
-        if (y >= headerHeight && y <= maxVisibleHeight) {
+        if (y >= headerHeight && y <= Math.max(maxVisibleHeight, containerSize.height)) {
             horizontalLines.push({
                 x1: 0,
                 y1: y,
