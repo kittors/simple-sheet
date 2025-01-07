@@ -1,11 +1,12 @@
 // 将数字转换为Excel列名（A, B, C, ..., Z, AA, AB, ...）
 export const numberToColumnName = (num: number): string => {
     let columnName = '';
-    while (num >= 0) {
-        const remainder = num % 26;
+    num = num + 1; // 因为传入的 index 是从0开始，所以需要加1
+
+    while (num > 0) {
+        const remainder = (num - 1) % 26;
         columnName = String.fromCharCode(65 + remainder) + columnName;
-        num = Math.ceil(num / 26) - 1;
-        if (num < 0) break;
+        num = Math.floor((num - 1) / 26);
     }
     return columnName;
 }
