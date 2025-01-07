@@ -11,7 +11,7 @@ declare interface CellItem {
 
 declare  interface SheetConfig extends BaseConfig {
     /** 表格前缀 */
-    prefix: string;
+    prefix?: string;
     /** 默认单元格尺寸 */
     defaultCellItem?: CellItem;
     /** 列宽集合，key 为列索引，value 为宽度 */

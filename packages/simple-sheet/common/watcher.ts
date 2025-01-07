@@ -1,5 +1,3 @@
-import type { State } from '../store/type';
-
 export type WatchCallback<T> = (newValue: T, oldValue: T) => void;
 
 export interface WatchOptions {
@@ -13,17 +11,17 @@ interface Watch<T> {
     options: WatchOptions;
 }
 
-export class Watcher {
-    private store: { state: State };
-    private watches: Map<keyof State, Watch<any>> = new Map();
+export class Watcher<T extends object = any> {
+    private target: T;
+    private watches: Map<keyof T, Watch<any>> = new Map();
 
-    constructor(store: { state: State }) {
-        this.store = store;
+    constructor(target?: T) {
+        this.target = target || {} as T;
     }
 
-    public watch<K extends keyof State>(
+    public watch<K extends keyof T>(
         key: K,
-        callback: WatchCallback<State[K]>,
+        callback: WatchCallback<T[K]>,
         options: WatchOptions = { immediate: false, once: true, deep: false }
     ): () => void {
         const existingWatch = this.watches.get(key);
@@ -40,7 +38,7 @@ export class Watcher {
             };
         }
 
-        const watch: Watch<State[K]> = {
+        const watch: Watch<T[K]> = {
             callbacks: new Set([callback]),
             options
         };
@@ -60,10 +58,10 @@ export class Watcher {
         };
     }
 
-    public async notify<K extends keyof State>(
+    public async notify<K extends keyof T>(
         key: K, 
-        newValue: State[K], 
-        oldValue: State[K]
+        newValue: T[K], 
+        oldValue: T[K]
     ): Promise<void> {
         const watch = this.watches.get(key);
         if (watch) {
@@ -81,7 +79,7 @@ export class Watcher {
         }
     }
 
-    public clearWatch(key?: keyof State) {
+    public clearWatch(key?: keyof T) {
         if (key) {
             this.watches.delete(key);
         } else {
@@ -89,7 +87,13 @@ export class Watcher {
         }
     }
 
-    private getCurrentValue<K extends keyof State>(key: K): State[K] {
-        return this.store.state[key];
+    private getCurrentValue<K extends keyof T>(key: K): T[K] {
+        return this.target[key];
+    }
+
+    public setTarget(target: T): void {
+        this.target = target;
     }
 }
+
+export const watch = () => new Watcher().watch;

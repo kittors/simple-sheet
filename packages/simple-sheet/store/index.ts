@@ -10,21 +10,36 @@ interface WatchOptions {
     deep?: boolean;
 }
 
+interface IWatcher {
+    watch<K extends keyof State>(
+        key: K,
+        callback: WatchCallback<State[K]>,
+        options: WatchOptions
+    ): () => void;
+    notify<K extends keyof State>(key: K, newValue: State[K], oldValue: State[K]): Promise<void>;
+    clearWatch(key?: keyof State): void;
+}
+
 class Store {
     private static instance: Store;
-    private watcher: Watcher;
+    private watcher: IWatcher;
     
     public state: State = state;
-
     private listeners: Listener[] = [];
 
-    private constructor() {
-        this.watcher = new Watcher(this);
+    private constructor(watcher: IWatcher) {
+        this.watcher = watcher;
+        if (this.watcher instanceof Watcher) {
+            this.watcher.setTarget(this.state);
+        }
     }
 
-    public static getInstance(): Store {
+    public static getInstance(watcher?: IWatcher): Store {
         if (!Store.instance) {
-            Store.instance = new Store();
+            if (!watcher) {
+                watcher = new Watcher<State>();
+            }
+            Store.instance = new Store(watcher);
         }
         return Store.instance;
     }
@@ -69,4 +84,4 @@ class Store {
     }
 }
 
-export default Store.getInstance(); 
+export default Store.getInstance(new Watcher<State>()); 

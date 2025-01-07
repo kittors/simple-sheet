@@ -82,7 +82,6 @@ class Loading {
     }
 
     private show(): void {
-        console.log('show');
         this.createLoadingElement();
         if (this.loadingElement) {
             this.loadingElement.style.display = 'flex';

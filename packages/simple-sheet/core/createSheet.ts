@@ -1,7 +1,11 @@
 import store from '../store';
 import draw from './draw';
+import { watch,ref, reactive } from '../tool';
 class CreateSheet {
     private static instance: CreateSheet;
+    private get scale() {
+        return store.getState('scale');
+    }
 
     private constructor() {}
 
@@ -17,6 +21,7 @@ class CreateSheet {
     }
 
     private watchStoreChanges() {
+
         // 监听缩放变化
         store.watch('scale', () => draw.startDraw(), {
             immediate: false,
