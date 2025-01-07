@@ -1,3 +1,12 @@
+interface LineData {
+    maxVisibleWidth: number;
+    maxVisibleHeight: number;
+    headerWidth: number;
+    headerHeight: number;
+    horizontalLines: Array<{x1: number, y1: number, x2: number, y2: number}>;
+    verticalLines: Array<{x1: number, y1: number, x2: number, y2: number}>;
+}
+
 interface State {
     /** 容器 */
     containers: Containers;
@@ -74,6 +83,8 @@ interface State {
         width: number;
         height: number;
     };
+    /** 表格线条数据 */
+    lineData?: LineData;
 }
 
 interface Containers {

@@ -1,10 +1,5 @@
 import store from '../../store';
-import { formatNumber } from '../../utils';
-
-// 添加精度控制方法
-const formatWithPrecision = (num: number): number => {
-    return formatNumber(num, 3);
-};
+import PreciseCalculator from '../../common/calculator';
 
 export function generateScrollBarConfig() {
     const scale = store.getState('scale') || 1;
@@ -23,20 +18,20 @@ export function generateScrollBarConfig() {
     let totalWidth = 0;
     for (let i = 0; i < cols; i++) {
         const customWidth = widths.get(i);
-        totalWidth = formatWithPrecision(totalWidth + (customWidth || defaultCellItem.width) * scale);
+        totalWidth = totalWidth + PreciseCalculator.multiply(customWidth || defaultCellItem.width , scale);
     }
 
     // 计算总高度
     let totalHeight = 0;
     for (let i = 0; i < rows; i++) {
         const customHeight = heights.get(i);
-        totalHeight = formatWithPrecision(totalHeight + (customHeight || defaultCellItem.height) * scale);
+        totalHeight = totalHeight + PreciseCalculator.multiply(customHeight || defaultCellItem.height, scale);
     }
 
     // 设置表格总尺寸
     store.setState('sheetTotalSize', {
-        width: formatWithPrecision(totalWidth),
-        height: formatWithPrecision(totalHeight),
+        width: totalWidth,
+        height: totalHeight,
     });
 
     // 解构获取到滚动条的最小宽度和最小高度
@@ -58,18 +53,30 @@ export function generateScrollBarConfig() {
     const horizontalScrollBar = {
         ...scrollBarConfig.horizontal,
         show: isShowHorizontalScrollBar,
-        width: formatWithPrecision(Math.max((horizontalScrollBarWidth / totalWidth) * horizontalScrollBarWidth, minSize)),
-        scrollBgWidth: formatWithPrecision(horizontalScrollBarWidth),
-        left: formatWithPrecision(scrollBarConfig.horizontal.left || 0),
+        width: PreciseCalculator.max(
+            PreciseCalculator.multiply(
+                PreciseCalculator.divide(horizontalScrollBarWidth, totalWidth),
+                horizontalScrollBarWidth
+            ),
+            minSize
+        ),
+        scrollBgWidth: horizontalScrollBarWidth,
+        left: scrollBarConfig.horizontal.left || 0,
     }
 
     // 计算垂直滚动条
     const verticalScrollBar = {
         ...scrollBarConfig.vertical,
         show: isShowVerticalScrollBar,
-        height: formatWithPrecision(Math.max((verticalScrollBarHeight / totalHeight) * verticalScrollBarHeight, minSize)),
-        scrollBgHeight: formatWithPrecision(verticalScrollBarHeight),
-        top: formatWithPrecision(scrollBarConfig.vertical.top || 0),
+        height: PreciseCalculator.max(
+            PreciseCalculator.multiply(
+                PreciseCalculator.divide(verticalScrollBarHeight , totalHeight),
+                verticalScrollBarHeight
+            ), 
+            minSize
+        ),
+        scrollBgHeight: verticalScrollBarHeight,
+        top: scrollBarConfig.vertical.top || 0,
     }
 
     store.setState('scrollBarConfig', {

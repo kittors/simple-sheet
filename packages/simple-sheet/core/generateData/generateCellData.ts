@@ -1,10 +1,6 @@
 import store from '../../store';
-import { getHeaderContent, formatNumber } from '../../utils';
-
-// 添加精度控制方法
-const formatWithPrecision = (num: number): number => {
-    return formatNumber(num, 6);
-};
+import { getHeaderContent } from '../../utils';
+import PreciseCalculator from '../../common/calculator';
 
 export function generateCellData(): void {
     const { width, height } = store.getState('containerSize');
@@ -26,15 +22,15 @@ export function generateCellData(): void {
     
     let currentWidth = 0;
     for (let i = 0; i < cols; i++) {
-        const cellW = Math.round((widths.get(i) || cellWidth) * scale);
-        currentWidth += cellW;
+        const cellW = PreciseCalculator.multiply((widths.get(i) || cellWidth), scale);
+        currentWidth = PreciseCalculator.add(currentWidth, cellW);
         accumulatedWidths[i] = currentWidth;
     }
     
     let currentHeight = 0;
     for (let i = 0; i < rows; i++) {
-        const cellH = Math.round((heights.get(i) || cellHeight) * scale);
-        currentHeight += cellH;
+        const cellH = PreciseCalculator.multiply((heights.get(i) || cellHeight), scale);
+        currentHeight = PreciseCalculator.add(currentHeight, cellH);
         accumulatedHeights[i] = currentHeight;
     }
 
@@ -49,8 +45,8 @@ export function generateCellData(): void {
     };
 
     // 应用缩放到表头尺寸
-    const scaledRowHeaderWidth = Math.round(headerConfig.rowHeaderWidth * scale);
-    const scaledColHeaderHeight = Math.round(headerConfig.colHeaderHeight * scale);
+    const scaledRowHeaderWidth = PreciseCalculator.multiply(headerConfig.rowHeaderWidth, scale);
+    const scaledColHeaderHeight = PreciseCalculator.multiply(headerConfig.colHeaderHeight, scale);
 
     // 计算可视区域（不包括表头）
     const viewportWidth = width - scaledRowHeaderWidth;
@@ -63,10 +59,12 @@ export function generateCellData(): void {
     const verticalScrollRange = scrollBarConfig.vertical.scrollBgHeight - scrollBarConfig.vertical.height;
     
     const horizontalLeft = maxHorizontalScroll > 0 
-        ? (scrollBarConfig.horizontal.left * maxHorizontalScroll / horizontalScrollRange)
+        ? PreciseCalculator.multiply(scrollBarConfig.horizontal.left, 
+            PreciseCalculator.divide(maxHorizontalScroll, horizontalScrollRange || 1))
         : 0;
     const verticalTop = maxVerticalScroll > 0 
-        ? (scrollBarConfig.vertical.top * maxVerticalScroll / verticalScrollRange)
+        ? PreciseCalculator.multiply(scrollBarConfig.vertical.top, 
+            PreciseCalculator.divide(maxVerticalScroll, verticalScrollRange || 1))
         : 0;
 
     // 计算起始行和列
@@ -93,10 +91,26 @@ export function generateCellData(): void {
         startX += customWidth * scale;
     }
         
-    const currentRows = Math.min(Math.ceil((height + verticalTop - startY) / (cellHeight * scale)), rows - startRow);
-    const currentCols = Math.min(Math.ceil((width + horizontalLeft - startX) / (cellWidth * scale)), cols - startCol);
+    const currentRows = PreciseCalculator.min(
+      
+            PreciseCalculator.divide(
+                PreciseCalculator.add(height, verticalTop),
+                PreciseCalculator.multiply(cellHeight, scale)
+            )
+        ,
+        PreciseCalculator.subtract(rows, startRow)
+    );
+    const currentCols = PreciseCalculator.min(
+       
+            PreciseCalculator.divide(
+                PreciseCalculator.add(width, horizontalLeft),
+                PreciseCalculator.multiply(cellWidth, scale)
+            )
+        ,
+        PreciseCalculator.subtract(cols, startCol)
+    );
         
-    const drawCellData = new Map();
+    const drawCellData = new Map<string, DrawCellDataItem>();
 
     // 生成内容区域的单元格
     for(let i = 0; i < currentRows; i++) {
@@ -105,16 +119,20 @@ export function generateCellData(): void {
             const colIndex = startCol + j;
             const key = `${rowIndex},${colIndex}`;
 
-            const x = Math.round(scaledRowHeaderWidth - horizontalLeft + 
-                (colIndex > 0 ? accumulatedWidths[colIndex - 1] : 0));
-            const y = Math.round(scaledColHeaderHeight - verticalTop + 
-                (rowIndex > 0 ? accumulatedHeights[rowIndex - 1] : 0));
+            const x = PreciseCalculator.add(
+                scaledRowHeaderWidth - horizontalLeft,
+                colIndex > 0 ? accumulatedWidths[colIndex - 1] : 0
+            );
+            const y = PreciseCalculator.add(
+                scaledColHeaderHeight - verticalTop,
+                rowIndex > 0 ? accumulatedHeights[rowIndex - 1] : 0
+            );
 
             drawCellData.set(key, { 
                 x,
                 y,
-                width: Math.round((widths.get(colIndex) || cellWidth) * scale),
-                height: Math.round((heights.get(rowIndex) || cellHeight) * scale),
+                width: PreciseCalculator.multiply((widths.get(colIndex) || cellWidth), scale),
+                height: PreciseCalculator.multiply((heights.get(rowIndex) || cellHeight), scale),
                 isCell: true
             });
         }
@@ -126,12 +144,12 @@ export function generateCellData(): void {
         const key = `${rowIndex},header`;
         const y = scaledColHeaderHeight - verticalTop + 
             (rowIndex > 0 ? accumulatedHeights[rowIndex - 1] : 0);
-        console.log(Math.round(y));
+        
         drawCellData.set(key, {
             x: 0,
-            y: Math.round(y),
+            y: y,
             width: scaledRowHeaderWidth,
-            height: Math.round((heights.get(rowIndex) || cellHeight) * scale),
+            height: PreciseCalculator.multiply((heights.get(rowIndex) || cellHeight), scale),
             isHeader: true,
             backgroundColor: '#f5f5f5',
             content: getHeaderContent('row', rowIndex, rowHeaderContent, colHeaderContent),
@@ -151,9 +169,9 @@ export function generateCellData(): void {
             (colIndex > 0 ? accumulatedWidths[colIndex - 1] : 0);
 
         drawCellData.set(key, {
-            x: Math.round(x),
+            x: x,
             y: 0,
-            width: Math.round((widths.get(colIndex) || cellWidth) * scale),
+            width: PreciseCalculator.multiply((widths.get(colIndex) || cellWidth), scale),
             height: scaledColHeaderHeight,
             isHeader: true,
             backgroundColor: '#f5f5f5',

@@ -32,8 +32,6 @@ class VerticalScrollBar {
             ? verticalConfig.scrollBgHeight 
             : this.store.getState('containerSize').height;
 
-            console.log(height);
-
         scrollBar.style.cssText = `
             position: absolute;
             top: 0;
@@ -98,7 +96,7 @@ class VerticalScrollBar {
         const dy = e.clientY - this.startY;
         
         if (this.scrollBarSliderElement) {
-            const newTop = Math.max(0, Math.min(this.scrollTop + dy, config.scrollBgHeight - config.height));
+            const newTop = Math.ceil(Math.max(0, Math.min(this.scrollTop + dy, config.scrollBgHeight - config.height)));
             this.store.setState('scrollBarConfig', {
                 ...this.scrollConfig,
                 vertical: {
@@ -151,14 +149,11 @@ class VerticalScrollBar {
             const config = this.scrollConfig.vertical;
             const currentTop = parseFloat(this.scrollBarSliderElement.style.top || '0');
             
-            // 根据滚轮deltaY的值计算更小的滚动距离
             const scrollDistance = wheelEvent.deltaY * this.scrollConfig.scrollSpeed;
             
-            const newTop = Math.max(0, Math.min(currentTop + scrollDistance, config.scrollBgHeight - config.height));
+            const newTop = Math.ceil(Math.max(0, Math.min(currentTop + scrollDistance, config.scrollBgHeight - config.height)));
             
-            // 一样的newTop 数据 就不需要再更新了
             if (newTop === currentTop) return;
-            // 直接更新位置，不使用过渡动画
             this.store.setState('scrollBarConfig', {
                 ...this.scrollConfig,
                 vertical: {

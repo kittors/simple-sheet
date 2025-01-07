@@ -65,7 +65,13 @@ interface ContentStyle {
     /** 字体行高 */
     lineHeight?: number;
 }
-  
+
+declare interface BorderStyle {
+    /** 边框大小 */
+    borderSize: number,
+    /** 边框颜色 */
+    borderColor: string,
+}
 
 declare interface DrawCellDataItem {
     /** 单元格x坐标 */
@@ -76,10 +82,16 @@ declare interface DrawCellDataItem {
     width: number,
     /** 单元格高度 */
     height: number,
-    /** 边框大小 */
-    borderSize?: number,
-    /** 边框颜色 */
-    borderColor?: string,
+    borderInfo?: {
+        /** 上边框 */
+        top?: BorderStyle,
+        /** 下边框 */
+        bottom?: BorderStyle,
+        /** 左边框 */
+        left?: BorderStyle,
+        /** 右边框 */
+        right?: BorderStyle,
+    },
     /** 是否是表头 */
     isHeader?: boolean;
     /** 是否是固定 */

@@ -1,15 +1,5 @@
 import store from '../../store';
-
-interface ContentStyle {
-    textAlign: string;
-    fontSize: number;
-    color: string;
-}
-
-interface CellContentProps {
-    content?: string;
-    contentStyle?: ContentStyle;
-}
+import PreciseCalculator from '../../common/calculator';
 
 export class DrawCellContent {
     private ctx: CanvasRenderingContext2D;
@@ -20,7 +10,7 @@ export class DrawCellContent {
 
     // 绘制单元格内容
     public draw(
-        cell: CellContentProps,
+        cell: DrawCellDataItem,
         x: number,
         y: number,
         width: number,
@@ -30,18 +20,18 @@ export class DrawCellContent {
         if (!content || !contentStyle) return;
 
         // 从 Store 获取当前的 scale
-        const scale = store.getState('scale');
+        const scale = store.getState('scale') || 1;
         
         this.ctx.fillStyle = contentStyle.color || '#333';
         // 字体大小需要乘以 scale
-        this.ctx.font = `${contentStyle.fontSize * scale}px Arial`;
+        this.ctx.font = `${ PreciseCalculator.multiply(contentStyle.fontSize || 12, scale)}px Arial`;
         this.ctx.textAlign = contentStyle.textAlign as CanvasTextAlign || 'center';
         this.ctx.textBaseline = 'middle';
 
         // 计算文本位置
-        const textX = x + (contentStyle.textAlign === 'center' ? width / 2 : 
-                          contentStyle.textAlign === 'right' ? width - 5 : 5);
-        const textY = y + height / 2;
+        const textX = x + (contentStyle.textAlign === 'center' ? PreciseCalculator.divide(width, 2) : 
+                          contentStyle.textAlign === 'right' ? PreciseCalculator.subtract(width, 5) : 5);
+        const textY = y + PreciseCalculator.divide(height, 2);
 
         this.ctx.fillText(content, textX, textY);
     }

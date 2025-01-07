@@ -1,6 +1,6 @@
 const defaultConfig: SheetConfig  = {
     container: 'simple-box',
-    rows: 100,
+    rows: 50,
     cols: 100,
     scale: 0.1,
     defaultCellItem: {
@@ -9,8 +9,8 @@ const defaultConfig: SheetConfig  = {
     },
     lineSize: 0.3,
     lineColor: '#000',
-    widths: new Map(),
-    heights: new Map(),
+    widths: new Map([[1, 300],[2, 300]]),
+    heights: new Map([[1, 300],[2, 300]]),
     headerConfig: {
         rowHeaderWidth: 40,
         colHeaderHeight: 25,

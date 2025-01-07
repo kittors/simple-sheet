@@ -23,8 +23,7 @@ class CreateSheet {
         this.createSheetContainer();
 
         // 监听缩放变化
-        store.watch('scale', (newVal) => {
-            console.log(newVal);
+        store.watch('scale', () => {
             draw.startDraw();
         }, {
             immediate: false,
@@ -47,7 +46,6 @@ class CreateSheet {
         store.watch('scrollBarConfig', (newValue, oldValue) => {
            // 检查垂直滚动条 top 和 水平滚动条的 left 是否变化
            if(newValue.vertical.top !== oldValue.vertical.top || newValue.horizontal.left !== oldValue.horizontal.left) {
-            // console.log('垂直滚动条 top 或 水平滚动条的 left 发生变化');
              // 开始绘制
              draw.startDraw();
            }

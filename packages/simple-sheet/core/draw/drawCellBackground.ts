@@ -18,7 +18,6 @@ export class DrawCellBackground {
         height: number
     ): void {
         if (!cell.backgroundColor) return;
-        
         this.ctx.fillStyle = cell.backgroundColor;
         this.ctx.fillRect(x, y, width, height);
     }

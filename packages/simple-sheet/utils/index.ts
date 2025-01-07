@@ -4,7 +4,7 @@ export const numberToColumnName = (num: number): string => {
     while (num >= 0) {
         const remainder = num % 26;
         columnName = String.fromCharCode(65 + remainder) + columnName;
-        num = Math.floor(num / 26) - 1;
+        num = Math.ceil(num / 26) - 1;
         if (num < 0) break;
     }
     return columnName;

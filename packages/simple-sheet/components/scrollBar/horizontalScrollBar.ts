@@ -97,9 +97,9 @@ class HorizontalScrollBar {
         // 计算光标滑动的X轴距离
         const dx = e.clientX - this.startX;
         
-        // 更新滚动滑块的位置，加入初始位置 scrollLeft
+        // 更新滚动滑块的位置，加入初始位置 scrollLeft，并确保是整数
         if (this.scrollBarSliderElement) {
-            const newLeft = Math.max(0, Math.min(this.scrollLeft + dx, config.scrollBgWidth - config.width));
+            const newLeft = Math.ceil(Math.max(0, Math.min(this.scrollLeft + dx, config.scrollBgWidth - config.width)));
             // 更新到Store中
             this.store.setState('scrollBarConfig', {
                 ...this.scrollConfig,
@@ -153,12 +153,12 @@ class HorizontalScrollBar {
             const config = this.scrollConfig.horizontal;
             const currentLeft = parseFloat(this.scrollBarSliderElement.style.left || '0');
 
-            // 根据滚轮deltaX的值计算更小的滚动距离
-            const scrollDistance = wheelEvent.deltaX * this.scrollConfig.scrollSpeed;
+            // 根据滚轮deltaX的值计算更小的滚动距离，并确保是整数
+            const scrollDistance = Math.ceil(wheelEvent.deltaX * this.scrollConfig.scrollSpeed);
             
-            const newLeft = Math.max(0, Math.min(currentLeft + scrollDistance, config.scrollBgWidth - config.width));
+            const newLeft = Math.ceil(Math.max(0, Math.min(currentLeft + scrollDistance, config.scrollBgWidth - config.width)));
 
-            // 一样的newTop 数据 就不需要再更新了
+            // 一样的newLeft 数据就不需要再更新了
             if (newLeft === currentLeft) return;
             // 直接更新位置，不使用过渡动画
             this.store.setState('scrollBarConfig', {

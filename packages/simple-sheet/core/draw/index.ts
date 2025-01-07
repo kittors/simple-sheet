@@ -34,13 +34,15 @@ class Draw {
         await generateData();
         
         if (this.ctx) {
-            // 先绘制表格线
-            this.drawSheetLine = new DrawSheetLine(this.ctx);
-            this.drawSheetLine.drawLines();
-            
-            // 再绘制单元格
+
+            // 先绘制单元格
             this.drawCell = new DrawCell(this.ctx);
             this.drawCell.drawCells();
+        
+            // 后绘制表格线
+            this.drawSheetLine = new DrawSheetLine(this.ctx);
+            this.drawSheetLine.drawLines();
+
         }
     }
 
@@ -55,8 +57,8 @@ class Draw {
         
         this.canvas.style.width = `${width}px`;
         this.canvas.style.height = `${height}px`;
-        this.canvas.width = Math.floor(width * this.dpr);
-        this.canvas.height = Math.floor(height * this.dpr);
+        this.canvas.width = Math.ceil(width * this.dpr);
+        this.canvas.height = Math.ceil(height * this.dpr);
         
         this.ctx = this.canvas.getContext('2d');
         if (this.ctx) {

@@ -1,7 +1,5 @@
 export class DrawCellBorder {
     private ctx: CanvasRenderingContext2D;
-    private readonly DEFAULT_BORDER_COLOR = '#000';
-    private readonly MIN_BORDER_WIDTH = 0.3;
 
     constructor(ctx: CanvasRenderingContext2D) {
         this.ctx = ctx;
@@ -18,28 +16,24 @@ export class DrawCellBorder {
         cells: Map<string, any>
     ): void {
         // 如果单元格是滚动条交叉区域，或者没有设置边框，则直接返回
-        if (cell.isScrollBarIntersection || !cell.borderSize) return;
+        if (cell.isScrollBarIntersection || !cell.borderInfo) return;
 
-        this.setupContext(cell);
-        this.drawBorders(x, y, width, height, row, col, cells);
+        const { borderInfo } = cell;
+        
+        // 分别绘制四个边
+        if (borderInfo.top) this.drawBorder(x, y, width, 0, borderInfo.top);
+        if (borderInfo.right) this.drawBorder(x + width, y, 0, height, borderInfo.right);
+        if (borderInfo.bottom) this.drawBorder(x, y + height, width, 0, borderInfo.bottom);
+        if (borderInfo.left) this.drawBorder(x, y, 0, height, borderInfo.left);
     }
 
-    private setupContext(cell: DrawCellDataItem): void {
+    private drawBorder(x: number, y: number, width: number, height: number, style: BorderStyle): void {
         this.ctx.beginPath();
-        this.ctx.strokeStyle = cell.borderColor || this.DEFAULT_BORDER_COLOR;
-        this.ctx.lineWidth = Math.max(this.MIN_BORDER_WIDTH, Math.round(cell.borderSize || 1));
-    }
-
-    private drawBorders(
-        x: number, 
-        y: number, 
-        width: number, 
-        height: number,
-        row: number,
-        col: number,
-        cells: Map<string, any>
-    ): void {
-        // 直接绘制完整边框
-        this.ctx.strokeRect(x, y, width, height);
+        this.ctx.strokeStyle = style.borderColor;
+        this.ctx.lineWidth = style.borderSize;
+        
+        this.ctx.moveTo(x, y);
+        this.ctx.lineTo(x + width, y + height);
+        this.ctx.stroke();
     }
 } 
