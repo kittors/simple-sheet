@@ -2,7 +2,7 @@ import HorizontalScrollBar from './horizontalScrollBar';
 import VerticalScrollBar from './verticalScrollBar';
 
 class ScrollBarManager {
-    private static instance: ScrollBarManager;
+    private static instance: ScrollBarManager | null = null;
     private horizontalScrollBar: HorizontalScrollBar;
     private verticalScrollBar: VerticalScrollBar;
 
@@ -18,6 +18,15 @@ class ScrollBarManager {
         return ScrollBarManager.instance;
     }
 
+    public static async destroy(): Promise<void> {
+        if (ScrollBarManager.instance) {
+            // 清理滚动条相关资源
+            await ScrollBarManager.instance.horizontalScrollBar.destroy();
+            await ScrollBarManager.instance.verticalScrollBar.destroy();
+            ScrollBarManager.instance = null;
+        }
+    }
+
     public getHorizontalScrollBar(): HorizontalScrollBar {
         return this.horizontalScrollBar;
     }
@@ -27,4 +36,4 @@ class ScrollBarManager {
     }
 }
 
-export default ScrollBarManager;
+export default ScrollBarManager.getInstance();

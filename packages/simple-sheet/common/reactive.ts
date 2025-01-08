@@ -26,9 +26,25 @@ export class Reactive<T extends object> {
     ): () => void {
         return this.watcher.watch(key, callback, options);
     }
+
+    public getWatcher(): Watcher<T> {
+        return this.watcher;
+    }
 }
 
 // 创建reactive的工厂函数
-export function reactive<T extends object>(state: T): Reactive<T> {
-    return new Reactive(state);
+export function reactive<T extends object>(state: T): T {
+    const reactiveObj = new Reactive(state);
+    const proxy = new Proxy(state, {
+        get(target, key) {
+            return reactiveObj.get(key as keyof T);
+        },
+        set(target, key, value) {
+            reactiveObj.set(key as keyof T, value);
+            return true;
+        }
+    });
+    
+    (proxy as any).__watcher = reactiveObj.getWatcher();
+    return proxy;
 } 

@@ -3,14 +3,26 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { onMounted, onUnmounted } from "vue";
 import "@sheet/style/index.scss"
 import sheet from "@sheet/index"
 
 onMounted(()=>{
   sheet.create({
     container:'sheet-box',
+    hook: {
+      beforeCreate: (config: SheetConfig) => {
+        console.log('beforeCreate', config);
+      },
+      afterCreate: () => {
+        console.log('afterCreate');
+      }
+    }
   })
+})
+
+onUnmounted(()=>{
+  sheet.destroy();
 })
 
 </script>

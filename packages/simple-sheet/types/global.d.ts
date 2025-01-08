@@ -1,3 +1,9 @@
+
+interface HookConfig {
+    [key: string]: Function;
+}
+
+
 declare interface BaseConfig {
     container:string;
     rows?: number;
@@ -52,6 +58,7 @@ declare interface NewSheetConfig extends SheetConfig {
        widths?: Map<number, number>;
        /** 行高集合，key 为行索引，value 为高度 */
        heights?: Map<number, number>;
+       hook?: HookConfig;
 }
 
 interface ContentStyle {

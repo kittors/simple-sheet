@@ -117,7 +117,7 @@ class VerticalScrollBar {
         return this.scrollBarElement;
     }
 
-    public destroy(): void {
+    public async destroy(): Promise<void> {
         this.scrollBarElement?.remove();
         this.store.clearWatch('scrollBarConfig');
     }

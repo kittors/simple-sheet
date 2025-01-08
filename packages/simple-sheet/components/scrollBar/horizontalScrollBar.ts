@@ -121,9 +121,8 @@ class HorizontalScrollBar {
         return this.scrollBarElement;
     }
 
-    public destroy(): void {
-        this.scrollBarElement?.remove();
-        this.store.clearWatch('scrollBarConfig');
+    public async destroy(): Promise<void> {
+        // 清理事件监听等资源
     }
 
     // 激活滑块

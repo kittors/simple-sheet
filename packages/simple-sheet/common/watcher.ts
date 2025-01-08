@@ -30,7 +30,7 @@ export class Watcher<T extends object = any> {
             existingWatch.callbacks.add(callback);
             if (options.immediate) {
                 const currentValue = this.getCurrentValue(key);
-                const value = options.deep ? JSON.parse(JSON.stringify(currentValue)) : currentValue;
+                const value = options.deep ? this.deepClone(currentValue) : currentValue;
                 callback(value, value);
             }
             return () => {
@@ -46,7 +46,7 @@ export class Watcher<T extends object = any> {
 
         if (options.immediate) {
             const currentValue = this.getCurrentValue(key);
-            const value = options.deep ? JSON.parse(JSON.stringify(currentValue)) : currentValue;
+            const value = options.deep ? this.deepClone(currentValue) : currentValue;
             callback(value, value);
         }
 
@@ -56,6 +56,25 @@ export class Watcher<T extends object = any> {
                 this.watches.delete(key);
             }
         };
+    }
+
+    private deepClone<V>(value: V): V {
+        if (value === null || typeof value !== 'object') {
+            return value;
+        }
+
+        if (Array.isArray(value)) {
+            return value.map(item => this.deepClone(item)) as any;
+        }
+
+        const result = {} as V;
+        for (const key in value) {
+            if (Object.prototype.hasOwnProperty.call(value, key)) {
+                if (key === '__watcher') continue;
+                result[key] = this.deepClone(value[key]);
+            }
+        }
+        return result;
     }
 
     public async notify<K extends keyof T>(
