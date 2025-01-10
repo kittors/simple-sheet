@@ -2,25 +2,64 @@ import { Ref } from './ref';
 import { Reactive } from './reactive';
 import type { WatchCallback, WatchOptions } from './watcher';
 
-export function watch<T>(
-    source: Ref<T>,
-    callback: WatchCallback<T>,
-    options?: WatchOptions
-): () => void;
-export function watch<T extends object, K extends keyof T>(
-    source: Reactive<T>,
-    key: K,
-    callback: WatchCallback<T[K]>,
-    options?: WatchOptions
-): () => void;
-export function watch<T extends object, K extends keyof T>(
-    source: Ref<T> | Reactive<T>,
-    keyOrCallback: K | WatchCallback<T>,
-    callbackOrOptions?: WatchCallback<T[K]> | WatchOptions,
-    options?: WatchOptions
-): () => void {
-    if (source instanceof Ref) {
-        return source.watch(keyOrCallback as WatchCallback<T>, callbackOrOptions as WatchOptions);
+let activeEffect: (() => void) | null = null;
+const targetMap = new WeakMap();
+
+function track(target: any, key: string | symbol) {
+    if (!activeEffect) return;
+    let depsMap = targetMap.get(target);
+    if (!depsMap) {
+        targetMap.set(target, (depsMap = new Map()));
     }
-    return source.watch(keyOrCallback as K, callbackOrOptions as WatchCallback<T[K]>, options);
-} 
+    let dep = depsMap.get(key);
+    if (!dep) {
+        depsMap.set(key, (dep = new Set()));
+    }
+    dep.add(activeEffect);
+}
+
+function trigger(target: any, key: string | symbol) {
+    const depsMap = targetMap.get(target);
+    if (!depsMap) return;
+    const dep = depsMap.get(key);
+    if (dep) {
+        dep.forEach((effect: () => void) => effect());
+    }
+}
+
+export function watch<T>(
+    source: T | (() => T),
+    callback: WatchCallback<T>,
+    options: WatchOptions = {}
+): () => void {
+    let getter: () => T;
+    if (typeof source === 'function') {
+        getter = source as () => T;
+    } else {
+        getter = () => source;
+    }
+
+    let oldValue = getter();
+    
+    const runner = () => {
+        const newValue = getter();
+        if (oldValue !== newValue) {
+            callback(newValue, oldValue);
+            oldValue = newValue;
+        }
+    };
+
+    activeEffect = runner;
+    getter();  // 初始收集依赖
+    activeEffect = null;
+
+    if (options.immediate) {
+        callback(oldValue, oldValue);
+    }
+
+    return () => {
+        // cleanup
+    };
+}
+
+export { track, trigger }; 

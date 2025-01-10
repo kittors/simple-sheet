@@ -1,4 +1,4 @@
- class Hook {
+class Hook {
     private static instance: Hook | null = null;
     private hooks: Map<string, Function[]> = new Map();
 

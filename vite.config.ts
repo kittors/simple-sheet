@@ -15,7 +15,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-      '@sheet': fileURLToPath(new URL('./packages/simple-sheet', import.meta.url))
+      '@sheet': fileURLToPath(new URL('./packages/sheet', import.meta.url))
     },
   },
 })

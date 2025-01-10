@@ -5,16 +5,14 @@ import ScrollBarManager from './components/scrollBar';
 import Loading from './components/loading';
 import controlManager from './core/control';
 import container from './components/container';
-import Hook from './common/Hook';
+import { hook } from './common';
 
 class SimpleSheet {
 
     private static instance: SimpleSheet | null = null;
-    private hook: Hook;
 
-    private constructor () {
-        this.hook = new Hook();
-    }
+
+    private constructor () { }
 
     public static getInstance (): SimpleSheet {
         if(!SimpleSheet.instance) {
@@ -25,14 +23,14 @@ class SimpleSheet {
     public async create (newSheetConfig: NewSheetConfig) {
         // 注册配置中的钩子
         if (newSheetConfig.hook) {
-            Object.entries(newSheetConfig.hook).forEach(([hookName, callback]) => {
+            for (const [hookName, callback] of Object.entries(newSheetConfig.hook)) {
                 if (typeof callback === 'function') {
-                    this.hook.on(hookName, callback);
+                    hook.on(hookName, callback);
                 }
-            });
+            }
         }
 
-        await this.hook.emit('beforeCreate', {
+        await hook.emit('beforeCreate', {
             config: newSheetConfig,
             instance: this
         });
@@ -57,12 +55,12 @@ class SimpleSheet {
         await Promise.resolve(ScrollBarManager.getHorizontalScrollBar());
 
         store.setState('isLoading', false);
-        await this.hook.emit('afterCreate');
+        await hook.emit('afterCreate');
 
         // 清理配置中注册的钩子，避免重复调用
         if (newSheetConfig.hook) {
             Object.keys(newSheetConfig.hook).forEach(hookName => {
-                this.hook.off(hookName);
+                hook.off(hookName);
             });
         }
     }
@@ -75,7 +73,7 @@ class SimpleSheet {
 
     public async destroy() {
         // 清理所有钩子
-        this.hook.clear();
+        hook.clear();
 
         // 清理滚动条
         // await ScrollBarManager.destroy();
@@ -91,15 +89,6 @@ class SimpleSheet {
 
         // 清理单例实例
         SimpleSheet.instance = null;
-    }
-    
-    // 暴露钩子方法
-    public on(hookName: string, callback: Function) {
-        this.hook.on(hookName, callback);
-    }
-
-    public off(hookName: string, callback?: Function) {
-        this.hook.off(hookName, callback);
     }
 }
 
